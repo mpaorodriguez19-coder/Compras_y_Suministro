@@ -152,28 +152,25 @@
         <table>
             <thead>
                 <tr>
+                    <th style="width:50px;">No.</th>
                     <th>Fecha</th>
                     <th>No. Orden</th>
-                    <th>Concepto</th>
+                    <th>Proveedor</th>
                     <th>Total Factura</th>
                 </tr>
             </thead>
             <tbody>
+                @php $globalCounter = 1; @endphp
                 @forelse($proveedores as $proveedor)
-                    <!-- Encabezado Proveedor -->
-                    <tr class="proveedor-header">
-                        <td colspan="4" style="text-align: left;">
-                            PROVEEDOR: {{ $proveedor->nombre }}
-                        </td>
-                    </tr>
 
                     @php $totalProveedor = 0; @endphp
 
                     @foreach ($proveedor->ordenes as $orden)
                         <tr>
+                            <td>{{ $globalCounter++ }}</td>
                             <td>{{ \Carbon\Carbon::parse($orden->fecha)->format('d/m/Y') }}</td>
                             <td>{{ $orden->numero }}</td>
-                            <td style="text-align:left;">{{ \Illuminate\Support\Str::limit($orden->concepto, 60) }}</td>
+                            <td style="text-align:left;">{{ $proveedor->nombre }}</td>
                             <td style="text-align:right;">L. {{ number_format($orden->total, 2) }}</td>
                         </tr>
                         @php $totalProveedor += $orden->total; @endphp
@@ -181,12 +178,13 @@
 
                     <!-- Total por Proveedor -->
                     <tr style="font-weight:bold; background-color:#f8f9fa;">
-                        <td colspan="3" style="text-align:right;">Total {{ $proveedor->nombre }}:</td>
+                        <td colspan="4" style="text-align:right;">Total {{ $proveedor->nombre }}:</td>
                         <td style="text-align:right;">L. {{ number_format($totalProveedor, 2) }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4">No hay compras registradas en este período.</td>
+                    <tr>
+                        <td colspan="5">No hay compras registradas en este período.</td>
                     </tr>
                 @endforelse
             </tbody>

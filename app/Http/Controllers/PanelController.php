@@ -58,8 +58,17 @@ class PanelController extends Controller
         return view('panel.resumen-proveedor', compact('proveedores', 'desde', 'hasta'));
     }
 
-    public function informe() {
-        return view('panel.informe');
+    public function informe(Request $request) {
+        $desde = $request->input('desde', now()->startOfMonth()->toDateString());
+        $hasta = $request->input('hasta', now()->toDateString());
+
+        $ordenes = Orden::with('solicitante')
+                        ->whereDate('fecha', '>=', $desde)
+                        ->whereDate('fecha', '<=', $hasta)
+                        ->orderBy('fecha', 'desc')
+                        ->get();
+
+        return view('panel.informe', compact('ordenes', 'desde', 'hasta'));
     }
 
     public function transparencia() {

@@ -394,7 +394,7 @@
                         Resumen proveedor
                     </a>
 
-                    <a href="{{ route('informe') }}" class="btn-as-panel">
+                    <a href="{{ route('informe') }}" id="btnInforme" class="btn-as-panel">
                         <span class="icon" style="background: linear-gradient(90deg,#6366f1,#06b6d4)">📄</span>
                         Informe
                     </a>
@@ -625,12 +625,14 @@
             const btnDetallado = document.getElementById('btnInformeDetallado');
             const btnCompras = document.getElementById('btnComprasProveedor');
             const btnResumen = document.getElementById('btnResumenProveedor');
+            const btnInforme = document.getElementById('btnInforme');
 
             const params = `?desde=${desde}&hasta=${hasta}`;
 
             if (btnDetallado) btnDetallado.href = "{{ route('informe.detallado') }}" + params;
             if (btnCompras) btnCompras.href = "{{ route('compras.proveedor') }}" + params;
             if (btnResumen) btnResumen.href = "{{ route('resumen.proveedor') }}" + params;
+            if (btnInforme) btnInforme.href = "{{ route('informe') }}" + params;
         }
 
         // Inicializar enlace al cargar
