@@ -76,11 +76,22 @@ class OrdenController extends Controller
             $numero = str_pad($numero, 6, '0', STR_PAD_LEFT);
 
            // dd($request->all());
-            // 1. GESTIONAR PROVEEDOR (BUSCAR O CREAR)
+            // 1. GESTIONAR PROVEEDOR (BUSCAR O ACTUALIZAR)
             $proveedorNombre = trim($request->proveedor);
-            $proveedorObj = Proveedor::firstOrCreate(
+            
+            // Datos adicionales del formulario (si vienen)
+            $datosProveedor = [
+                'direccion' => $request->lugar, // Se mantiene 'lugar' como dirección por defecto si no hay otra
+            ];
+
+            if($request->filled('proveedor_rtn')) $datosProveedor['rtn'] = $request->proveedor_rtn;
+            if($request->filled('proveedor_telefono')) $datosProveedor['telefono'] = $request->proveedor_telefono;
+            if($request->filled('proveedor_correo')) $datosProveedor['correo'] = $request->proveedor_correo;
+            if($request->filled('proveedor_direccion')) $datosProveedor['direccion'] = $request->proveedor_direccion; // Sobrescribe 'lugar' si se especificó dirección
+
+            $proveedorObj = Proveedor::updateOrCreate(
                 ['nombre' => $proveedorNombre],
-                ['direccion' => $request->lugar]
+                $datosProveedor
             );
 
             // 2. GESTIONAR SOLICITANTE (BUSCAR O CREAR)

@@ -81,12 +81,12 @@
         }
 
         td.numero {
-            width: 8%;
+            width: 5%;
             text-align: left;
         }
 
         td.fecha {
-            width: 18%;
+            width: 10%;
             text-align: left;
         }
 
@@ -96,13 +96,19 @@
         }
 
         td.nombre {
-            width: 50%;
+            width: 35%;
+            text-align: left;
+            padding-left: 8px;
+        }
+
+        td.solicitada {
+            width: 25%;
             text-align: left;
             padding-left: 8px;
         }
 
         td.valor {
-            width: 14%;
+            width: 15%;
             text-align: right;
             padding-right: 10px;
         }
@@ -190,6 +196,7 @@
                     <th>Fecha</th>
                     <th>Numero F.</th>
                     <th>Proveedor</th>
+                    <th>Solicitada</th>
                     <th>Valor L.</th>
                 </tr>
             </thead>
@@ -201,11 +208,12 @@
                         <td class="fecha">{{ \Carbon\Carbon::parse($orden->fecha)->format('d/m/Y') }}</td>
                         <td class="numeropedido">{{ $orden->numero }}</td>
                         <td class="nombre">{{ optional($orden->proveedor)->nombre }}</td>
+                        <td class="solicitada">{{ optional($orden->solicitante)->name }}</td>
                         <td class="valor">{{ number_format($orden->total, 2) }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" style="text-align:center;">No hay órdenes en este rango de fechas.</td>
+                        <td colspan="6" style="text-align:center;">No hay órdenes en este rango de fechas.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -219,6 +227,7 @@
             <tfoot>
                 <tr class="total-row">
                     <td>TOTAL</td>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>

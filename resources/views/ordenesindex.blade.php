@@ -251,6 +251,14 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm">🔍</button>
                                 <div id="listaProveedores" class="autocomplete-list"></div>
                             </div>
+                            {{-- <button type="button" class="btn btn-outline-success btn-sm ms-1"
+                                onclick="abrirModalProveedor()" title="Editar Datos del Proveedor">➕</button> --}}
+
+                            <!-- Inputs Ocultos para Datos Extendidos -->
+                            <input type="hidden" name="proveedor_rtn" id="h_proveedor_rtn">
+                            <input type="hidden" name="proveedor_telefono" id="h_proveedor_telefono">
+                            <input type="hidden" name="proveedor_correo" id="h_proveedor_correo">
+                            <input type="hidden" name="proveedor_direccion" id="h_proveedor_direccion">
                         </div>
                         <div class="d-flex flex-wrap align-items-center mb-1">
                             <label for="lugar" class="form-label fw-bold me-2 mb-0"
