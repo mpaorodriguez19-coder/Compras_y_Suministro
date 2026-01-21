@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Informe de Órdenes de Compra</title>
@@ -7,18 +8,22 @@
         /* ========= OPCIÓN 2: Estilo tipo PDF A4 ========= */
         body {
             font-family: Arial, sans-serif;
-            background: #f0f0f0; /* Fondo gris para simular escritorio */
+            background: #f0f0f0;
+            /* Fondo gris para simular escritorio */
             display: flex;
             justify-content: center;
             padding: 20px;
         }
 
         .informe {
-            width: 216mm;        /* Ancho carta */
-            min-height: 279mm;   /* Alto carta */
+            width: 216mm;
+            /* Ancho carta */
+            min-height: 279mm;
+            /* Alto carta */
             background: white;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3); /* Sombra tipo hoja */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            /* Sombra tipo hoja */
             box-sizing: border-box;
         }
 
@@ -41,7 +46,8 @@
             flex-grow: 1;
         }
 
-        .centro h1, .centro h2 {
+        .centro h1,
+        .centro h2 {
             margin: 3px;
         }
 
@@ -69,7 +75,8 @@
             margin-top: 15px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid black;
             padding: 6px;
             text-align: center;
@@ -117,6 +124,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Botón de imprimir -->
@@ -137,16 +145,16 @@
             <div class="centro">
                 <h1>MUNICIPALIDAD DE DANLÍ, EL PARAÍSO</h1>
                 <h2>DEPARTAMENTO DE COMPRAS Y SUMINISTROS</h2>
-                 <h2>INFORME DE COMPRAS
-                <div class="periodo">
-                    PERÍODO DEL: <span id="periodoDesde">01/02/2025</span>
-                    AL <span id="periodoHasta">15/02/2025</span>
-                </div>
+                <h2>INFORME DE COMPRAS
+                    <div class="periodo">
+                        PERÍODO DEL: {{ \Carbon\Carbon::parse($desde)->format('d/m/Y') }}
+                        AL {{ \Carbon\Carbon::parse($hasta)->format('d/m/Y') }}
+                    </div>
             </div>
 
             <!-- DERECHA: FECHA Y PAGINA -->
             <div class="info-der">
-                <img src="imagenes/logo_der.jpeg" class="logo"><br><br> 
+                <img src="imagenes/logo_der.jpeg" class="logo"><br><br>
                 Fecha: <span id="fechaActual"></span><br>
                 Página: 1
             </div>
@@ -163,15 +171,30 @@
                     <th>Fecha</th>
                     <th>Numero</th>
                     <th>Nombre</th>
-                 <th>Valor L.</th>
+                    <th>Valor L.</th>
                     <th>Descripcion</th>
                     <th>Observaciones</th>
                     <th>Faltas</th>
-              
                 </tr>
             </thead>
             <tbody>
-                <!-- VACÍO -->
+                @forelse($ordenes as $orden)
+                    @foreach ($orden->items as $item)
+                        <tr>
+                            <td style="width:10%;">{{ \Carbon\Carbon::parse($orden->fecha)->format('d/m/Y') }}</td>
+                            <td style="width:10%;">{{ $orden->numero }}</td>
+                            <td style="text-align:left; width:25%;">{{ optional($orden->proveedor)->nombre }}</td>
+                            <td style="text-align:right; width:12%;">{{ number_format($item->valor, 2) }}</td>
+                            <td style="text-align:left; width:25%;">{{ $item->descripcion }}</td>
+                            <td style="width:9%;"></td> <!-- Observaciones -->
+                            <td style="width:9%;"></td> <!-- Faltas -->
+                        </tr>
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="7">No hay datos en este período.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
 
@@ -186,11 +209,12 @@
         // Función de imprimir
         function imprimirInforme() {
             const btn = document.querySelector('.btn-imprimir');
-            btn.style.display = 'none';  // Ocultar botón
+            btn.style.display = 'none'; // Ocultar botón
             window.print();
-            btn.style.display = 'block';  // Volver a mostrar
+            btn.style.display = 'block'; // Volver a mostrar
         }
     </script>
 
 </body>
+
 </html>

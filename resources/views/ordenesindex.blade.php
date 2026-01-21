@@ -242,6 +242,7 @@
                                 value="{{ date('Y-m-d') }}">
                         </div>
 
+
                         <div class="d-flex flex-wrap align-items-center mb-1">
                             <label for="proveedor" class="form-label fw-bold me-2 mb-0"
                                 style="width:120px;">Proveedor:</label>
@@ -407,7 +408,7 @@
                         Informe
                     </a>
 
-                    <a href="{{ route('transparencia') }}" class="btn-as-panel">
+                    <a href="{{ route('transparencia') }}" id="btnTransparencia" class="btn-as-panel">
                         <span class="icon" style="background: linear-gradient(90deg,#ef4444,#06b6d4)">🔎</span>
                         Transparencia
                     </a>
@@ -634,6 +635,7 @@
             const btnCompras = document.getElementById('btnComprasProveedor');
             const btnResumen = document.getElementById('btnResumenProveedor');
             const btnInforme = document.getElementById('btnInforme');
+            const btnTransparencia = document.getElementById('btnTransparencia');
 
             const params = `?desde=${desde}&hasta=${hasta}`;
 
@@ -641,6 +643,7 @@
             if (btnCompras) btnCompras.href = "{{ route('compras.proveedor') }}" + params;
             if (btnResumen) btnResumen.href = "{{ route('resumen.proveedor') }}" + params;
             if (btnInforme) btnInforme.href = "{{ route('informe') }}" + params;
+            if (btnTransparencia) btnTransparencia.href = "{{ route('transparencia') }}" + params;
         }
 
         // Inicializar enlace al cargar

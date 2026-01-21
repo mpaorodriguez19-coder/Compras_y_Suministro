@@ -71,7 +71,16 @@ class PanelController extends Controller
         return view('panel.informe', compact('ordenes', 'desde', 'hasta'));
     }
 
-    public function transparencia() {
-        return view('panel.transparencia');
+    public function transparencia(Request $request) {
+        $desde = $request->input('desde', now()->startOfMonth()->toDateString());
+        $hasta = $request->input('hasta', now()->toDateString());
+
+        $ordenes = Orden::with(['proveedor', 'items'])
+                        ->whereDate('fecha', '>=', $desde)
+                        ->whereDate('fecha', '<=', $hasta)
+                        ->orderBy('fecha', 'desc')
+                        ->get();
+
+        return view('panel.transparencia', compact('ordenes', 'desde', 'hasta'));
     }
 }
