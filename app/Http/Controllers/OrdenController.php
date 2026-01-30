@@ -28,7 +28,7 @@ class OrdenController extends Controller
 
         $ordenes = $query->paginate(10)->appends($request->all());
 
-        return view('orden.ordenesindex', compact('ordenes'));
+        return view('ordenesindex', compact('ordenes'));
     }
 
     // FORMULARIO REPONER NUEVA ORDEN

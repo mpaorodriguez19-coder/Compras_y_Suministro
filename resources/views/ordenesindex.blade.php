@@ -198,7 +198,16 @@
     </style>
 </head>
 
-<body>
+<body class="bg-gray-100">
+
+    <!-- Navbar Simple -->
+    <nav class="bg-white shadow-sm py-2 mb-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm">🏠 Ir al Panel Principal</a>
+            <span class="fw-bold text-muted">Creación de Orden de Compra</span>
+        </div>
+    </nav>
+
     <div class="container main-card p-0">
 
         <!-- Barra superior -->
