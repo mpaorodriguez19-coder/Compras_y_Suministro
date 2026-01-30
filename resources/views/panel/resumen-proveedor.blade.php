@@ -118,7 +118,8 @@
 
 <body>
 
-    <button class="btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+    <!-- Botón de imprimir -->
+    <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn-imprimir" target="_blank">📥 Descargar PDF</a>
 
     <div class="informe">
         <div class="encabezado">

@@ -298,9 +298,8 @@
                                         <th style="width:50px">Cant.</th>
                                         <th>Descripción</th>
                                         <th style="width:50px">Unidad</th>
-                                        <th style="width:50px">Precio Unitario</th>
-                                        <th style="width:50px">Descuento</th>
-                                        <th style="width:50px">Valor L.</th>
+                                        <th style="width:80px">Precio U.</th>
+                                        <th style="width:80px">Valor L.</th>
                                         <th style="width:50px">Acción</th>
                                     </tr>
                                 </thead>
@@ -321,7 +320,7 @@
                             <div style="width:260px;">
                                 <div class="totals-panel">
                                     <input type="hidden" name="sub_total" id="subTotalInput" value="0.00">
-                                    <input type="hidden" name="descuento_total" id="descTotalInput" value="0.00">
+                                    {{-- <input type="hidden" name="descuento_total" id="descTotalInput" value="0.00"> --}} <!-- Ya no oculto, ahora es el input visible -->
                                     <input type="hidden" name="impuesto" id="impuestoInput" value="0.00">
                                     <input type="hidden" name="total" id="totalInput" value="0.00">
 
@@ -329,12 +328,15 @@
                                         <div>Sub-Total</div>
                                         <div><strong id="subTotal">0.00</strong></div>
                                     </div>
-                                    <div class="d-flex justify-content-between mt-1">
+                                    <div class="d-flex justify-content-between mt-1 align-items-center">
                                         <div>Descuento Total</div>
-                                        <div id="descTotal">0.00</div>
+                                        <!-- Descuento editable -->
+                                        <input type="number" name="descuento_total" id="descTotalInput"
+                                            class="form-control form-control-sm text-end p-0 pe-1"
+                                            style="width:80px; background:white;" step="0.01" value="0.00">
                                     </div>
                                     <div class="d-flex justify-content-between mt-1">
-                                        <div>Impuesto</div>
+                                        <div>Impuesto (15%)</div>
                                         <div id="impuesto">0.00</div>
                                     </div>
                                     <hr />
@@ -435,11 +437,12 @@
         <td><input type="number" name="cantidad[]" min="0" step="1" class="form-control form-control-sm no-arrows qty" /></td>
         <td class="d-flex align-items-center">
             <input type="text" name="descripcion[]" class="form-control form-control-sm desc me-1" placeholder="Descripción del artículo" />
-            <input type="checkbox" name="aplica_desc[]" class="form-check-input small-checkbox" title="Aplica descuento?" />
+            <input type="hidden" name="aplica_impuesto[]" value="0">
+            <input type="checkbox" class="form-check-input small-checkbox" onchange="this.previousElementSibling.value = this.checked ? 1 : 0;" title="¿Lleva Impuesto (15%)?" />
         </td>
         <td><input type="text" name="unidad[]" class="form-control form-control-sm unidad" /></td>
         <td><input type="number" name="precio_unitario[]" step="0.01" class="form-control form-control-sm no-arrows price" /></td>
-        <td><input type="number" name="descuento[]" step="0.01" class="form-control form-control-sm no-arrows discount" /></td>
+        <!-- Eliminado Descuento x Item -->
         <td><input type="text" name="valor[]" class="valor-read" readonly value="0.00" /></td>
         <td class="text-center"><button type="button" class="btn btn-sm btn-danger py-0 px-2" onclick="eliminarFila(this)">X</button></td>
     `;
@@ -465,10 +468,9 @@
         function calcularFila(row) {
             const qty = parseFloat(row.querySelector('.qty').value) || 0;
             const precio = parseFloat(row.querySelector('.price').value) || 0;
-            const desc = parseFloat(row.querySelector('.discount').value) || 0;
-            const aplicaDesc = row.querySelector('.small-checkbox').checked;
+            // Descuento item removido
             let valor = qty * precio;
-            if (aplicaDesc) valor -= desc;
+
             row.querySelector('.valor-read').value = valor.toFixed(2);
             return valor;
         }
@@ -476,35 +478,47 @@
         function calcularTotales() {
             const rows = document.querySelectorAll('#itemsTable tbody tr');
             let subTotal = 0;
-            let totalDesc = 0;
+            let impuestoTotal = 0;
+
             rows.forEach(row => {
                 const qty = parseFloat(row.querySelector('.qty').value) || 0;
                 const precio = parseFloat(row.querySelector('.price').value) || 0;
-                const desc = parseFloat(row.querySelector('.discount').value) || 0;
-                const aplicaDesc = row.querySelector('.small-checkbox').checked;
+                const llevaImpuesto = row.querySelector('.small-checkbox').checked;
+
                 const valor = calcularFila(row);
-                subTotal += qty * precio;
-                if (aplicaDesc) totalDesc += desc;
+                subTotal += valor;
+
+                if (llevaImpuesto) {
+                    impuestoTotal += (valor * 0.15); // 15% ISV
+                }
             });
-            const impuesto = (subTotal - totalDesc) * 0.15;
-            const total = subTotal - totalDesc + impuesto;
+
+            // Descuento Global
+            const descGlobal = parseFloat(document.getElementById('descTotalInput').value) || 0;
+
+            const total = subTotal + impuestoTotal - descGlobal;
 
             document.getElementById('subTotal').innerText = subTotal.toFixed(2);
-            document.getElementById('descTotal').innerText = totalDesc.toFixed(2);
-            document.getElementById('impuesto').innerText = impuesto.toFixed(2);
+            document.getElementById('impuesto').innerText = impuestoTotal.toFixed(2);
             document.getElementById('total').innerText = total.toFixed(2);
 
             document.getElementById('subTotalInput').value = subTotal.toFixed(2);
-            document.getElementById('descTotalInput').value = totalDesc.toFixed(2);
-            document.getElementById('impuestoInput').value = impuesto.toFixed(2);
+            document.getElementById('impuestoInput').value = impuestoTotal.toFixed(2);
             document.getElementById('totalInput').value = total.toFixed(2);
+            // descTotalInput ya tiene el valor
         }
 
         function agregarListeners() {
-            document.querySelectorAll('.qty, .price, .discount, .small-checkbox').forEach(input => {
+            document.querySelectorAll('.qty, .price, .small-checkbox').forEach(input => {
                 input.oninput = calcularTotales;
                 input.onchange = calcularTotales;
             });
+            // Listener para descuento global
+            const descInput = document.getElementById('descTotalInput');
+            if (descInput) {
+                descInput.oninput = calcularTotales;
+                descInput.onchange = calcularTotales;
+            }
         }
 
         // Inicializar 7 filas

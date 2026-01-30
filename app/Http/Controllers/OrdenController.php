@@ -120,20 +120,19 @@ class OrdenController extends Controller
             ]);
 
             $subtotal = 0;
-            $descuentoTotal = 0;
+            $impuestoTotal = 0;
 
             for ($i = 0; $i < count($request->descripcion); $i++) {
                 $descripcion = trim($request->descripcion[$i] ?? '');
                 $cantidad    = (float) ($request->cantidad[$i] ?? 0);
                 $precio      = (float) ($request->precio_unitario[$i] ?? 0);
-                $descuento   = (float) ($request->descuento[$i] ?? 0);
+                // $descuento   = 0; // Descuento por item retirado
                 $unidad      = $request->unidad[$i] ?? null;
+                $llevaImpuesto = (isset($request->aplica_impuesto[$i]) && $request->aplica_impuesto[$i] == 1);
 
                 if ($descripcion === '' || $cantidad <= 0) continue;
 
-                $valor = ($cantidad * $precio) - $descuento;
-
-                $valor = ($cantidad * $precio) - $descuento;
+                $valor = ($cantidad * $precio);
 
                 OrdenItem::create([
                     'orden_id'        => $orden->id,
@@ -141,25 +140,30 @@ class OrdenController extends Controller
                     'unidad'          => $unidad,
                     'cantidad'        => $cantidad,
                     'precio_unitario' => $precio,
-                    'descuento'       => $descuento,
+                    'descuento'       => 0,
                     'valor'           => $valor,
                 ]);
 
-                $subtotal += ($cantidad * $precio);
-                $descuentoTotal += $descuento;
+                $subtotal += $valor; // Suma al subtotal limpio
+                
+                if ($llevaImpuesto) {
+                    $impuestoTotal += ($valor * 0.15);
+                }
             }
 
             if ($subtotal <= 0) {
                 throw new \Exception('Debe ingresar al menos un item válido.');
             }
 
-            $impuesto = 0;
-            $total = $subtotal - $descuentoTotal + $impuesto;
+            // Descuento Global
+            $descuentoGlobal = (float) $request->input('descuento_total', 0);
+
+            $total = $subtotal - $descuentoGlobal + $impuestoTotal;
 
             $orden->update([
                 'subtotal'  => $subtotal,
-                'descuento' => $descuentoTotal,
-                'impuesto'  => $impuesto,
+                'descuento' => $descuentoGlobal,
+                'impuesto'  => $impuestoTotal, // Se guarda el total del impuesto calculado
                 'total'     => $total,
             ]);
 
@@ -179,7 +183,11 @@ class OrdenController extends Controller
     public function verEspera($id)
     {
         $orden = Orden::with(['items', 'proveedor', 'solicitante'])
-                      ->findOrFail($id);
+                      ->find($id);
+
+        if (!$orden) {
+            return redirect()->route('orden.reponer')->with('error', "La Orden #{$id} no fue encontrada.");
+        }
 
         return view('orden.espera', compact('orden'));
     }
@@ -187,6 +195,7 @@ class OrdenController extends Controller
     // GENERAR PDF
     public function pdf($id)
     {
+        Carbon::setLocale('es'); // Forzar español para las fechas
         $orden = Orden::with(['items', 'proveedor', 'solicitante'])
                       ->findOrFail($id);
 
@@ -199,9 +208,13 @@ class OrdenController extends Controller
     // BUSCAR PROVEEDORES (AJAX)
     public function buscarProveedores(Request $request) {
         $q = $request->get('q');
-        return Proveedor::where('nombre', 'like', "%{$q}%")
-                        ->limit(10)
-                        ->get(['id', 'nombre', 'direccion']);
+        $query = Proveedor::select('id', 'nombre', 'direccion');
+        
+        if (!empty($q)) {
+            $query->where('nombre', 'like', "%{$q}%");
+        }
+        
+        return $query->orderBy('nombre')->limit(20)->get();
     }
 
     // BUSCAR USUARIOS (AJAX)

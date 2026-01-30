@@ -312,7 +312,7 @@
 
 <body>
 
-    <button class="btn-imprimir" onclick="window.print()">🖨 Imprimir Orden</button>
+    <a href="{{ route('orden.pdf', $orden->id) }}" class="btn-imprimir" target="_blank">🖨 Descargar PDF</a>
 
     <div class="hoja">
 

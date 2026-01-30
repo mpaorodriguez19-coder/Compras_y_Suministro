@@ -128,7 +128,8 @@
 <body>
 
     <!-- Botón de imprimir -->
-    <button class="btn-imprimir" onclick="imprimirInforme()">🖨 Imprimir</button>
+    <!-- Botón de imprimir -->
+    <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn-imprimir" target="_blank">📥 Descargar PDF</a>
 
     <!-- CONTENEDOR TIPO PDF -->
     <div class="informe">
