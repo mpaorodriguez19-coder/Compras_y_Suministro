@@ -26,15 +26,29 @@ class ProveedorController extends Controller
 
     public function store(Request $request)
     {
+        $messages = [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.max' => 'El nombre no puede exceder los 255 caracteres.',
+            'rtn.required' => 'El RTN es obligatorio.',
+            'rtn.size' => 'El RTN debe tener exactamente 14 caracteres.',
+            'rtn.unique' => 'El RTN ya está registrado.',
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'correo.required' => 'El correo es obligatorio.',
+            'correo.email' => 'El correo debe ser válido.',
+            'direccion.required' => 'La dirección es obligatoria.',
+        ];
+
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rtn' => 'nullable|string|max:20',
-            'telefono' => 'nullable|string|max:20',
-            'correo' => 'nullable|email|max:255',
-            'direccion' => 'nullable|string',
-        ]);
+            'rtn' => 'required|string|size:14|unique:proveedores,rtn',
+            'telefono' => 'required|string|max:20',
+            'correo' => 'required|email|max:255',
+            'direccion' => 'required|string',
+        ], $messages);
 
         Proveedor::create($request->all());
+
+        \App\Services\BitacoraLogger::log("Creó el proveedor {$request->nombre}", 'Proveedores');
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor creado exitosamente.');
     }
@@ -43,15 +57,29 @@ class ProveedorController extends Controller
     {
         $proveedor = Proveedor::findOrFail($id);
 
+        $messages = [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.max' => 'El nombre no puede exceder los 255 caracteres.',
+            'rtn.required' => 'El RTN es obligatorio.',
+            'rtn.size' => 'El RTN debe tener exactamente 14 caracteres.',
+            'rtn.unique' => 'El RTN ya está registrado.',
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'correo.required' => 'El correo es obligatorio.',
+            'correo.email' => 'El correo debe ser válido.',
+            'direccion.required' => 'La dirección es obligatoria.',
+        ];
+
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rtn' => 'nullable|string|max:20',
-            'telefono' => 'nullable|string|max:20',
-            'correo' => 'nullable|email|max:255',
-            'direccion' => 'nullable|string',
-        ]);
+            'rtn' => 'required|string|size:14|unique:proveedores,rtn,' . $id,
+            'telefono' => 'required|string|max:20',
+            'correo' => 'required|email|max:255',
+            'direccion' => 'required|string',
+        ], $messages);
 
         $proveedor->update($request->all());
+
+        \App\Services\BitacoraLogger::log("Actualizó el proveedor {$proveedor->nombre}", 'Proveedores');
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor actualizado exitosamente.');
     }

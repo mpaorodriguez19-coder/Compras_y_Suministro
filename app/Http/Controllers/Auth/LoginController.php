@@ -25,6 +25,9 @@ class LoginController extends Controller
 
         if (Auth::guard('admin')->attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
+            
+            \App\Services\BitacoraLogger::log('Inició sesión', 'Auth');
+
             return redirect()->intended(route('dashboard'));
         }
 
@@ -35,6 +38,9 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        // Log antes de hacer logout para tener el usuario activo
+        \App\Services\BitacoraLogger::log('Cerró sesión', 'Auth');
+
         Auth::guard('admin')->logout();
 
         $request->session()->invalidate();

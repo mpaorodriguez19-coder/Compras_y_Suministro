@@ -312,7 +312,7 @@
 
 <body>
 
-    <a href="{{ route('orden.pdf', $orden->id) }}" class="btn-imprimir" target="_blank">🖨 Descargar PDF</a>
+    <a href="{{ route('orden.pdf', $orden->id) }}" class="btn-imprimir" target="_blank">🖨 Imprimir</a>
 
     <div class="hoja">
 
@@ -343,7 +343,8 @@
             <div class="dato-row">
                 <span class="dato-label">FECHA:</span>
                 <span class="dato-val">
-                    {{ \Carbon\Carbon::parse($orden->fecha)->isoFormat('D [de] MMMM, YYYY') }}
+                    {{ \Carbon\Carbon::parse($orden->fecha)->locale('es')->isoFormat('D [de] MMMM, YYYY') }}
+
                 </span>
             </div>
             <div class="dato-row">

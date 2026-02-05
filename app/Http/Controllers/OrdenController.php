@@ -28,7 +28,11 @@ class OrdenController extends Controller
 
         $ordenes = $query->paginate(10)->appends($request->all());
 
-        return view('ordenesindex', compact('ordenes'));
+        $ultimo = Orden::latest('id')->first();
+        $numero = $ultimo ? $ultimo->id + 1 : 1;
+        $numero = str_pad($numero, 6, '0', STR_PAD_LEFT);
+
+        return view('ordenesindex', compact('ordenes', 'numero'));
     }
 
     // FORMULARIO REPONER NUEVA ORDEN
@@ -51,6 +55,7 @@ class OrdenController extends Controller
         $request->validate([
             'fecha' => 'required|date',
             'proveedor' => 'required|string',
+            'lugar' => 'required|string',
             'solicitado' => 'required|string',
             'descripcion' => 'required|array|min:1',
             'cantidad' => 'required|array|min:1',
@@ -68,31 +73,47 @@ class OrdenController extends Controller
             'precio_unitario.required' => 'El precio unitario es obligatorio.'
         ]);
 
+        // VALIDACIÓN MANUAL DE ITEMS (Al menos uno válido)
+        $hasItems = false;
+        if ($request->has('descripcion') && $request->has('cantidad')) {
+             foreach ($request->descripcion as $key => $desc) {
+                $cant = $request->cantidad[$key] ?? 0;
+                if (!empty(trim($desc)) && $cant > 0) {
+                    $hasItems = true;
+                    break;
+                }
+             }
+        }
+
+        if (!$hasItems) {
+            return back()->withInput()->withErrors(['descripcion' => 'Debe agregar al menos un producto con descripción y cantidad válida.']);
+        }
+
         DB::beginTransaction();
 
         try {
-            $ultimo = Orden::latest('id')->first();
-            $numero = $ultimo ? $ultimo->id + 1 : 1;
-            $numero = str_pad($numero, 6, '0', STR_PAD_LEFT);
 
-           // dd($request->all());
-            // 1. GESTIONAR PROVEEDOR (BUSCAR O ACTUALIZAR)
+            // $ultimo, $numero logic removed (handled inside transaction atomically)
+            // dd($request->all());
+            // 1. GESTIONAR PROVEEDOR (VALIDAR EXISTENCIA)
             $proveedorNombre = trim($request->proveedor);
             
-            // Datos adicionales del formulario (si vienen)
-            $datosProveedor = [
-                'direccion' => $request->lugar, // Se mantiene 'lugar' como dirección por defecto si no hay otra
-            ];
+            $proveedorObj = Proveedor::where('nombre', $proveedorNombre)->first();
 
-            if($request->filled('proveedor_rtn')) $datosProveedor['rtn'] = $request->proveedor_rtn;
-            if($request->filled('proveedor_telefono')) $datosProveedor['telefono'] = $request->proveedor_telefono;
-            if($request->filled('proveedor_correo')) $datosProveedor['correo'] = $request->proveedor_correo;
-            if($request->filled('proveedor_direccion')) $datosProveedor['direccion'] = $request->proveedor_direccion; // Sobrescribe 'lugar' si se especificó dirección
+            if (!$proveedorObj) {
+                return back()->withInput()->with('error', 'El proveedor "' . $proveedorNombre . '" no existe. Por favor agréguelo primero en la sección de Proveedores.');
+            }
 
-            $proveedorObj = Proveedor::updateOrCreate(
-                ['nombre' => $proveedorNombre],
-                $datosProveedor
-            );
+            // Actualizar datos si vienen en el request (Opcional, pero útil si se quiere mantener actualizado)
+             if($request->filled('proveedor_rtn') || $request->filled('proveedor_telefono') || $request->filled('proveedor_correo') || $request->filled('proveedor_direccion')) {
+                $datosActualizar = [];
+                if($request->filled('proveedor_rtn')) $datosActualizar['rtn'] = $request->proveedor_rtn;
+                if($request->filled('proveedor_telefono')) $datosActualizar['telefono'] = $request->proveedor_telefono;
+                if($request->filled('proveedor_correo')) $datosActualizar['correo'] = $request->proveedor_correo;
+                if($request->filled('proveedor_direccion')) $datosActualizar['direccion'] = $request->proveedor_direccion;
+                
+                $proveedorObj->update($datosActualizar);
+            }
 
             // 2. GESTIONAR SOLICITANTE (BUSCAR O CREAR)
             $solicitanteNombre = trim($request->solicitado);
@@ -104,10 +125,12 @@ class OrdenController extends Controller
                 ]
             );
 
-            // Crear ORDEN
+            // Crear ORDEN con número temporal para evitar colisiones
+            $tempNumero = uniqid('TEMP_');
+            
             $orden = Orden::create([
-                'numero'         => $numero,
-                'fecha'          => $request->fecha,
+                'numero'         => $tempNumero,
+                'fecha'          => Carbon::createFromFormat('d-m-Y', $request->fecha)->format('Y-m-d'),
                 'proveedor_id'   => $proveedorObj->id,
                 'lugar'          => $request->lugar,
                 'solicitante_id' => $solicitanteObj->id,
@@ -118,6 +141,11 @@ class OrdenController extends Controller
                 'total'          => 0,
                 'estado'         => 'pendiente',
             ]);
+
+            // Actualizar con el número real basado en el ID autoincremental
+            // Esto garantiza unicidad total sin condiciones de carrera
+            $realNumero = str_pad($orden->id, 6, '0', STR_PAD_LEFT);
+            $orden->update(['numero' => $realNumero]);
 
             $subtotal = 0;
             $impuestoTotal = 0;
@@ -167,6 +195,8 @@ class OrdenController extends Controller
                 'total'     => $total,
             ]);
 
+            \App\Services\BitacoraLogger::log("Creó la orden #{$orden->numero}", 'Ordenes');
+
             DB::commit();
 
             // REDIRIGIR CON EL ID CORRECTO
@@ -198,6 +228,8 @@ class OrdenController extends Controller
         Carbon::setLocale('es'); // Forzar español para las fechas
         $orden = Orden::with(['items', 'proveedor', 'solicitante'])
                       ->findOrFail($id);
+        
+        \App\Services\BitacoraLogger::log("Imprimió/Visualizó PDF orden #{$orden->numero}", 'Ordenes');
 
         $pdf = Pdf::loadView('orden.espera_pdf', compact('orden'))
                   ->setPaper('letter', 'portrait');
@@ -223,5 +255,197 @@ class OrdenController extends Controller
         return \App\Models\User::where('name', 'like', "%{$q}%")
                     ->limit(10)
                     ->get(['id', 'name']);
+    }
+    // ==========================================
+    // NUEVAS FUNCIONES DE GESTIÓN (LISTA, EDITAR, ANULAR)
+    // ==========================================
+
+    // MOSTRAR LISTA DE ÓRDENES
+    public function lista(Request $request)
+    {
+        $query = Orden::with('proveedor')->orderBy('id', 'desc');
+
+        // Búsqueda por termino
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function($sql) use ($q) {
+                $sql->where('numero', 'like', "%{$q}%")
+                    ->orWhere('lugar', 'like', "%{$q}%")
+                    ->orWhereHas('proveedor', function ($prov) use ($q) {
+                        $prov->where('nombre', 'like', "%{$q}%");
+                    });
+            });
+        }
+
+        // Filtro Fechas
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha', '>=', $request->desde);
+        }
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha', '<=', $request->hasta);
+        }
+
+        $ordenes = $query->paginate(15)->appends($request->all());
+
+        return view('orden.lista', compact('ordenes'));
+    }
+
+    // EDITAR ORDEN (Reutiliza la vista de crear)
+    public function edit($id)
+    {
+        $orden = Orden::with('items')->findOrFail($id);
+        
+        // Cargar proveedores
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        
+        // El numero, fecha, etc se pasarán via $orden a la vista
+        // La vista 'ordenesindex' debe estar preparada para recibir $orden
+        
+        // Reutilizamos la variable $numero para la vista, aunque aquí es el numero de la orden existente
+        $numero = $orden->numero;
+
+        return view('ordenesindex', compact('orden', 'proveedores', 'numero'));
+    }
+
+    // ACTUALIZAR ORDEN (PUT)
+    public function update(Request $request, $id)
+    {
+        $orden = Orden::findOrFail($id);
+
+        if ($orden->estado === 'anulada') {
+             return back()->with('error', 'No se puede editar una orden anulada.');
+        }
+
+        // Validación similar a store
+        $request->validate([
+            'fecha' => 'required|date',
+            'proveedor' => 'required|string',
+            'lugar' => 'required|string',
+            'solicitado' => 'required|string',
+            'descripcion' => 'required|array|min:1',
+            'cantidad' => 'required|array|min:1',
+            'precio_unitario' => 'required|array|min:1',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // 1. Proveedor
+            $proveedorNombre = trim($request->proveedor);
+            $proveedorObj = Proveedor::where('nombre', $proveedorNombre)->first();
+            if (!$proveedorObj) {
+                return back()->withInput()->with('error', "El proveedor '$proveedorNombre' no existe.");
+            }
+
+             // 2. Solicitante
+            $solicitanteNombre = trim($request->solicitado);
+            $solicitanteObj = User::firstOrCreate(
+                ['name' => $solicitanteNombre],
+                ['email' => strtolower(str_replace(' ', '.', $solicitanteNombre)) . '@sistema.local', 'password' => bcrypt('12345678')]
+            );
+
+            // 3. Actualizar Cabecera
+             $orden->update([
+                'fecha'          => Carbon::createFromFormat('d-m-Y', $request->fecha)->format('Y-m-d'), // Asegurar formato Y-m-d
+                'proveedor_id'   => $proveedorObj->id,
+                'lugar'          => $request->lugar,
+                'solicitante_id' => $solicitanteObj->id,
+                'concepto'       => $request->concepto,
+            ]);
+
+            // 4. Actualizar Items (Borrar y Crear de nuevo para simplificar)
+            $orden->items()->delete();
+
+            $subtotal = 0;
+            $impuestoTotal = 0;
+
+            for ($i = 0; $i < count($request->descripcion); $i++) {
+                $descripcion = trim($request->descripcion[$i] ?? '');
+                $cantidad    = (float) ($request->cantidad[$i] ?? 0);
+                $precio      = (float) ($request->precio_unitario[$i] ?? 0);
+                $unidad      = $request->unidad[$i] ?? null;
+                $llevaImpuesto = (isset($request->aplica_impuesto[$i]) && $request->aplica_impuesto[$i] == 1);
+
+                if ($descripcion === '' || $cantidad <= 0) continue;
+
+                $valor = ($cantidad * $precio);
+
+                OrdenItem::create([
+                    'orden_id'        => $orden->id,
+                    'descripcion'     => $descripcion,
+                    'unidad'          => $unidad,
+                    'cantidad'        => $cantidad,
+                    'precio_unitario' => $precio,
+                    'descuento'       => 0,
+                    'valor'           => $valor,
+                ]);
+
+                $subtotal += $valor;
+                if ($llevaImpuesto) $impuestoTotal += ($valor * 0.15);
+            }
+
+            // Totales
+            $descuentoGlobal = (float) $request->input('descuento_total', 0);
+            $total = $subtotal - $descuentoGlobal + $impuestoTotal;
+
+            $orden->update([
+                'subtotal'  => $subtotal,
+                'descuento' => $descuentoGlobal,
+                'impuesto'  => $impuestoTotal,
+                'total'     => $total,
+            ]);
+            
+            \App\Services\BitacoraLogger::log("Editó la orden #{$orden->numero}", 'Ordenes');
+
+            DB::commit();
+
+            return redirect()->route('ordenes.lista')->with('success', "Orden #{$orden->numero} actualizada correctamente.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error actualizando orden', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+    }
+
+    // ANULAR ORDEN (Checkeo de seguridad)
+    public function anular(Request $request, $id)
+    {
+        $orden = Orden::findOrFail($id);
+
+        // Validar Credenciales de Admin si el usuario actual NO es super admin
+        // Asumimos que auth('admin')->user() es el usuario logueado.
+        // Si hay roles, verificamos rol.
+        
+        $currentUser = auth('admin')->user();
+        $isSuperAdmin = ($currentUser && $currentUser->role === 'super_admin');
+
+        if (!$isSuperAdmin) {
+            // Verificar credenciales enviadas
+            $request->validate([
+                'admin_email' => 'required|email',
+                'admin_password' => 'required',
+            ]);
+
+            $credentials = ['email' => $request->admin_email, 'password' => $request->admin_password];
+            
+            // Intentamos autenticar "manualmente" contra la tabla de admins para verificar privilegios
+            if (!auth('admin')->attempt($credentials)) {
+                 return back()->with('error', 'Credenciales de administrador incorrectas. No se pudo anular.');
+            }
+            
+            // Verificar si ese usuario autenticado es super admin
+            $adminUser = \App\Models\Admin::where('email', $request->admin_email)->first();
+            if (!$adminUser || $adminUser->role !== 'super_admin') {
+                 return back()->with('error', 'El usuario ingresado no tiene permisos de Super Admin para anular.');
+            }
+        }
+
+        // Proceder a anular
+        $orden->update(['estado' => 'anulada']);
+        
+        \App\Services\BitacoraLogger::log("Anuló la orden #{$orden->numero}", 'Ordenes');
+        
+        return back()->with('success', "Orden #{$orden->numero} anulada correctamente.");
     }
 }

@@ -201,18 +201,13 @@
 <body class="bg-gray-100">
 
     <!-- Navbar Simple -->
-    <nav class="bg-white shadow-sm py-2 mb-3">
-        <div class="container d-flex justify-content-between align-items-center">
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm">🏠 Ir al Panel Principal</a>
-            <span class="fw-bold text-muted">Creación de Orden de Compra</span>
-        </div>
-    </nav>
+    <!-- Navbar Global -->
+    @include('partials.navbar')
 
-    <div class="container main-card p-0">
-
+    <div class="container main-card p-0 mt-5">
         <!-- Barra superior -->
         <div class="header-bar">
-            <h4 class="m-0">Orden de Compra</h4>
+            <h4 class="m-0">{{ isset($orden) ? 'Editar Orden' : 'Orden de Compra' }} #{{ $numero ?? '---' }}</h4>
         </div>
 
         <div class="row g-2 mb-0">
@@ -239,16 +234,23 @@
                     </div>
                 @endif
 
-                <form action="{{ route('orden.reponer.guardar') }}" method="POST" id="ordenForm">
+                <form
+                    action="{{ isset($orden) ? route('ordenes.update', $orden->id) : route('orden.reponer.guardar') }}"
+                    method="POST" id="ordenForm">
                     @csrf
+                    @if (isset($orden))
+                        @method('PUT')
+                    @endif
                     <div class="p-2 rounded shadow-sm bg-light mb-0">
 
                         <!-- Fecha, Proveedor, Lugar, Solicitado por -->
                         <div class="d-flex flex-wrap align-items-center mb-1 gap-2">
                             <label for="fecha" class="form-label fw-bold mb-0" style="width:80px;">Fecha:</label>
-                            <input id="fecha" name="fecha" type="date"
-                                class="form-control form-control-sm shadow-sm" style="max-width:150px;"
-                                value="{{ date('Y-m-d') }}">
+                            <input id="fecha" name="fecha" type="text"
+                                class="form-control form-control-sm shadow-sm"
+                                style="max-width:150px; background:#f1f1f1;"
+                                value="{{ old('fecha', isset($orden) ? \Carbon\Carbon::parse($orden->fecha)->format('d-m-Y') : date('d-m-Y')) }}"
+                                readonly>
                         </div>
 
 
@@ -256,10 +258,15 @@
                             <label for="proveedor" class="form-label fw-bold me-2 mb-0"
                                 style="width:120px;">Proveedor:</label>
                             <div class="input-group input-group-sm autocomplete-wrapper" style="max-width:400px;">
-                                <input id="proveedor" name="proveedor" type="text" class="form-control shadow-sm"
-                                    placeholder="Proveedor..." autocomplete="off">
-                                <button type="button" class="btn btn-outline-primary btn-sm">🔍</button>
+                                <input id="proveedor" name="proveedor" type="text"
+                                    class="form-control shadow-sm @error('proveedor') is-invalid @enderror"
+                                    placeholder="Buscar por Nombre o RTN" autocomplete="off"
+                                    value="{{ old('proveedor', isset($orden) ? $orden->proveedor->nombre : '') }}">
+
                                 <div id="listaProveedores" class="autocomplete-list"></div>
+                                @error('proveedor')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                             {{-- <button type="button" class="btn btn-outline-success btn-sm ms-1"
                                 onclick="abrirModalProveedor()" title="Editar Datos del Proveedor">➕</button> --}}
@@ -274,17 +281,27 @@
                             <label for="lugar" class="form-label fw-bold me-2 mb-0"
                                 style="width:120px;">Lugar:</label>
                             <input id="lugar" name="lugar" type="text"
-                                class="form-control form-control-sm shadow-sm" placeholder="Sede / ubicación"
-                                style="max-width:400px;">
+                                class="form-control form-control-sm shadow-sm @error('lugar') is-invalid @enderror"
+                                placeholder="Sede / ubicación" style="max-width:400px;"
+                                value="{{ old('lugar', isset($orden) ? $orden->lugar : 'DANLI, EL PARAISO') }}"
+                                required>
+                            @error('lugar')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="d-flex flex-wrap align-items-center mb-1">
                             <label for="solicitado" class="form-label fw-bold me-2 mb-0" style="width:120px;">Solicitado
                                 por:</label>
                             <div class="input-group input-group-sm autocomplete-wrapper" style="max-width:400px;">
-                                <input id="solicitado" name="solicitado" type="text" class="form-control shadow-sm"
-                                    placeholder="Usuario solicitante..." autocomplete="off">
-                                <button type="button" class="btn btn-outline-primary btn-sm">🔍</button>
+                                <input id="solicitado" name="solicitado" type="text"
+                                    class="form-control shadow-sm @error('solicitado') is-invalid @enderror"
+                                    placeholder="Usuario solicitante..." autocomplete="off"
+                                    value="{{ old('solicitado', isset($orden) ? $orden->solicitante->name : '') }}">
+
                                 <div id="listaUsuarios" class="autocomplete-list"></div>
+                                @error('solicitado')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -311,7 +328,10 @@
                         <div class="d-flex justify-content-between align-items-start gap-2 mt-2">
                             <div class="flex-grow-1">
                                 <label class="form-label">Concepto</label>
-                                <textarea name="concepto" rows="3" class="form-control"></textarea>
+                                <textarea name="concepto" rows="3" class="form-control @error('concepto') is-invalid @enderror">{{ old('concepto', isset($orden) ? $orden->concepto : '') }}</textarea>
+                                @error('concepto')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                                 <div class="mt-1">
                                     <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="agregarFila()">+ Agregar fila</button>
@@ -332,8 +352,12 @@
                                         <div>Descuento Total</div>
                                         <!-- Descuento editable -->
                                         <input type="number" name="descuento_total" id="descTotalInput"
-                                            class="form-control form-control-sm text-end p-0 pe-1"
-                                            style="width:80px; background:white;" step="0.01" value="0.00">
+                                            class="form-control form-control-sm text-end p-0 pe-1 @error('descuento_total') is-invalid @enderror"
+                                            style="width:80px; background:white;" step="0.01" placeholder="0.00"
+                                            value="{{ old('descuento_total', isset($orden) ? $orden->descuento : '') }}">
+                                        @error('descuento_total')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="d-flex justify-content-between mt-1">
                                         <div>Impuesto (15%)</div>
@@ -362,7 +386,10 @@
             <div class="col-lg-2 ps-0">
                 <div class="right-panel position-sticky" style="top:0;">
 
-                    <!-- Rango de Fechas -->
+                    <!-- BOTÓN VER LISTA -->
+                    <a href="{{ route('ordenes.lista') }}" class="btn btn-primary w-100 mb-3 fw-bold shadow-sm">
+                        📦 Ver Lista de Órdenes
+                    </a>
                     <div class="mb-3 p-2 bg-white rounded shadow-sm border">
                         <small class="fw-bold d-block mb-1">📅 Rango de Fechas</small>
                         <div class="mb-1">
@@ -399,27 +426,30 @@
                     </a>
 
                     <a href="{{ route('informe.detallado') }}" id="btnInformeDetallado"
-                        class="btn-as-panel w-100 text-center">
+                        class="btn-as-panel w-100 text-center" target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#06b6d4,#3b82f6)">🔗</span>
                         Informe detallado
                     </a>
 
-                    <a href="{{ route('compras.proveedor') }}" id="btnComprasProveedor" class="btn-as-panel">
+                    <a href="{{ route('compras.proveedor') }}" id="btnComprasProveedor" class="btn-as-panel"
+                        target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#06b6d4,#10b981)">🏷️</span>
                         Compras proveedor
                     </a>
 
-                    <a href="{{ route('resumen.proveedor') }}" id="btnResumenProveedor" class="btn-as-panel">
+                    <a href="{{ route('resumen.proveedor') }}" id="btnResumenProveedor" class="btn-as-panel"
+                        target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#f59e0b,#06b6d4)">📊</span>
                         Resumen proveedor
                     </a>
 
-                    <a href="{{ route('informe') }}" id="btnInforme" class="btn-as-panel">
+                    <a href="{{ route('informe') }}" id="btnInforme" class="btn-as-panel" target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#6366f1,#06b6d4)">📄</span>
                         Informe
                     </a>
 
-                    <a href="{{ route('transparencia') }}" id="btnTransparencia" class="btn-as-panel">
+                    <a href="{{ route('transparencia') }}" id="btnTransparencia" class="btn-as-panel"
+                        target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#ef4444,#06b6d4)">🔎</span>
                         Transparencia
                     </a>
@@ -429,25 +459,82 @@
     </div>
 
     <script>
-        // Agregar fila
-        function agregarFila() {
+        // ==========================
+        //  DATOS DE VALIDACIÓN Y PERSISTENCIA
+        // ==========================
+        const oldData = {
+            cantidad: @json(old('cantidad', isset($orden) ? $orden->items->pluck('cantidad') : [])),
+            descripcion: @json(old('descripcion', isset($orden) ? $orden->items->pluck('descripcion') : [])),
+            unidad: @json(old('unidad', isset($orden) ? $orden->items->pluck('unidad') : [])),
+            precio: @json(old('precio_unitario', isset($orden) ? $orden->items->pluck('precio_unitario') : [])),
+            impuesto: @json(old('aplica_impuesto', []))
+        };
+
+        const errorBag = @json($errors->getMessages());
+
+        // ==========================
+        //  FUNCIONES TABLA
+        // ==========================
+        function agregarFila(cantidad = '', descripcion = '', unidad = '', precio = '', impuesto = 0, index = null) {
             const tbody = document.querySelector('#itemsTable tbody');
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-        <td><input type="number" name="cantidad[]" min="0" step="1" class="form-control form-control-sm no-arrows qty" /></td>
-        <td class="d-flex align-items-center">
-            <input type="text" name="descripcion[]" class="form-control form-control-sm desc me-1" placeholder="Descripción del artículo" />
-            <input type="hidden" name="aplica_impuesto[]" value="0">
-            <input type="checkbox" class="form-check-input small-checkbox" onchange="this.previousElementSibling.value = this.checked ? 1 : 0;" title="¿Lleva Impuesto (15%)?" />
-        </td>
-        <td><input type="text" name="unidad[]" class="form-control form-control-sm unidad" /></td>
-        <td><input type="number" name="precio_unitario[]" step="0.01" class="form-control form-control-sm no-arrows price" /></td>
-        <!-- Eliminado Descuento x Item -->
-        <td><input type="text" name="valor[]" class="valor-read" readonly value="0.00" /></td>
-        <td class="text-center"><button type="button" class="btn btn-sm btn-danger py-0 px-2" onclick="eliminarFila(this)">X</button></td>
-    `;
-            tbody.appendChild(fila);
-            agregarListeners();
+            const rowIndex = index !== null ? index : tbody.rows.length; // Use passed index or current length
+
+            // Helpers para errores
+            const getError = (field) => {
+                if (index === null) return ''; // No index, no error (new row)
+                const key = `${field}.${index}`;
+                return errorBag[key] ? errorBag[key][0] : '';
+            };
+
+            const isInvalid = (field) => getError(field) ? 'is-invalid' : '';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="number" name="cantidad[]" min="0" step="1" 
+                           class="form-control form-control-sm no-arrows qty ${isInvalid('cantidad')}" 
+                           value="${cantidad}" />
+                    ${getError('cantidad') ? `<div class="invalid-feedback" style="font-size:10px">${getError('cantidad')}</div>` : ''}
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <input type="text" name="descripcion[]" 
+                               class="form-control form-control-sm desc me-1 ${isInvalid('descripcion')}" 
+                               placeholder="Descripción del artículo" value="${descripcion}" />
+                        
+                        <input type="hidden" name="aplica_impuesto[]" value="${impuesto}">
+                        <input type="checkbox" class="form-check-input small-checkbox" 
+                               ${impuesto == 1 ? 'checked' : ''} 
+                               onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calcularTotales();" 
+                               title="¿Lleva Impuesto (15%)?" />
+                    </div>
+                    ${getError('descripcion') ? `<div class="invalid-feedback d-block" style="font-size:10px">${getError('descripcion')}</div>` : ''}
+                </td>
+                <td>
+                    <input type="text" name="unidad[]" class="form-control form-control-sm unidad ${isInvalid('unidad')}" 
+                           value="${unidad}" />
+                     ${getError('unidad') ? `<div class="invalid-feedback d-block" style="font-size:10px">${getError('unidad')}</div>` : ''}
+                </td>
+                <td>
+                    <input type="number" name="precio_unitario[]" step="0.01" 
+                           class="form-control form-control-sm no-arrows price ${isInvalid('precio_unitario')}" 
+                           value="${precio}" />
+                    ${getError('precio_unitario') ? `<div class="invalid-feedback d-block" style="font-size:10px">${getError('precio_unitario')}</div>` : ''}
+                </td>
+                <td><input type="text" name="valor[]" class="valor-read" readonly value="0.00" /></td>
+                <td class="text-center"><button type="button" class="btn btn-sm btn-danger py-0 px-2" onclick="eliminarFila(this)">X</button></td>
+            `;
+            tbody.appendChild(row);
+            agregarListenersRow(row);
+            calcularFila(row); // Calc initial value
+        }
+
+        // Helper for Number Formatting (1,234.56)
+        function formatNumber(num) {
+            return num.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
 
         // Eliminar fila
@@ -468,10 +555,10 @@
         function calcularFila(row) {
             const qty = parseFloat(row.querySelector('.qty').value) || 0;
             const precio = parseFloat(row.querySelector('.price').value) || 0;
-            // Descuento item removido
             let valor = qty * precio;
 
-            row.querySelector('.valor-read').value = valor.toFixed(2);
+            // Mostrar valor formateado
+            row.querySelector('.valor-read').value = formatNumber(valor);
             return valor;
         }
 
@@ -483,9 +570,14 @@
             rows.forEach(row => {
                 const qty = parseFloat(row.querySelector('.qty').value) || 0;
                 const precio = parseFloat(row.querySelector('.price').value) || 0;
-                const llevaImpuesto = row.querySelector('.small-checkbox').checked;
+                const checkbox = row.querySelector('.small-checkbox');
+                const llevaImpuesto = checkbox ? checkbox.checked : false;
 
-                const valor = calcularFila(row);
+                const valor = qty * precio;
+                // row.querySelector('.valor-read').value is managed by calcularFila above for singular updates, 
+                // but we call it here to ensure mass updates work too
+                row.querySelector('.valor-read').value = formatNumber(valor);
+
                 subTotal += valor;
 
                 if (llevaImpuesto) {
@@ -493,39 +585,62 @@
                 }
             });
 
-            // Descuento Global
             const descGlobal = parseFloat(document.getElementById('descTotalInput').value) || 0;
-
             const total = subTotal + impuestoTotal - descGlobal;
 
-            document.getElementById('subTotal').innerText = subTotal.toFixed(2);
-            document.getElementById('impuesto').innerText = impuestoTotal.toFixed(2);
-            document.getElementById('total').innerText = total.toFixed(2);
+            // Textos visibles (Labels) con formato 1,234.56
+            document.getElementById('subTotal').innerText = formatNumber(subTotal);
+            document.getElementById('impuesto').innerText = formatNumber(impuestoTotal);
+            document.getElementById('total').innerText = formatNumber(total);
 
+            // Inputs Ocultos (Raw Data para el Backend)
             document.getElementById('subTotalInput').value = subTotal.toFixed(2);
             document.getElementById('impuestoInput').value = impuestoTotal.toFixed(2);
             document.getElementById('totalInput').value = total.toFixed(2);
-            // descTotalInput ya tiene el valor
         }
 
-        function agregarListeners() {
-            document.querySelectorAll('.qty, .price, .small-checkbox').forEach(input => {
+        function agregarListenersRow(row) {
+            row.querySelectorAll('.qty, .price').forEach(input => {
                 input.oninput = calcularTotales;
                 input.onchange = calcularTotales;
             });
-            // Listener para descuento global
+            // Checkbox listener is inline
+        }
+
+        // ==========================
+        //  INICIALIZACIÓN
+        // ==========================
+        window.addEventListener('DOMContentLoaded', () => {
+
+            // 1. Reconstruir filas (Old Data vs Default)
+            if (oldData.cantidad && oldData.cantidad.length > 0) {
+                // Hay datos previos (error de validación)
+                for (let i = 0; i < oldData.cantidad.length; i++) {
+                    agregarFila(
+                        oldData.cantidad[i],
+                        oldData.descripcion[i],
+                        oldData.unidad[i],
+                        oldData.precio[i],
+                        oldData.impuesto[i],
+                        i // Pass index to find error
+                    );
+                }
+            } else {
+                // Entrada limpia: 7 filas vacías
+                for (let i = 0; i < 7; i++) agregarFila();
+            }
+
+            // Calcular totales iniciales
+            calcularTotales();
+
+            // Listener global para descuento
             const descInput = document.getElementById('descTotalInput');
             if (descInput) {
                 descInput.oninput = calcularTotales;
                 descInput.onchange = calcularTotales;
             }
-        }
 
-        // Inicializar 7 filas
-        window.addEventListener('DOMContentLoaded', () => {
-            for (let i = 0; i < 7; i++) agregarFila();
-
-            // Autocomplete Proveedor
+            // 2. Autocomplete Proveedor
             setupAutocomplete(
                 document.getElementById('proveedor'),
                 document.getElementById('listaProveedores'),
@@ -536,7 +651,7 @@
                 }
             );
 
-            // Autocomplete Usuarios
+            // 3. Autocomplete Usuarios
             setupAutocomplete(
                 document.getElementById('solicitado'),
                 document.getElementById('listaUsuarios'),
@@ -545,6 +660,9 @@
                     document.getElementById('solicitado').value = item.name;
                 }
             );
+
+            // 4. Inicializar fechas URL
+            handleInput();
         });
 
         // ==========================
@@ -573,7 +691,6 @@
                                 data.forEach(item => {
                                     const div = document.createElement('div');
                                     div.classList.add('autocomplete-item');
-                                    // Muestra nombre y un extra si existe (ej. telefono o email)
                                     div.innerHTML =
                                         `<strong>${item.nombre || item.name}</strong>`;
                                     div.addEventListener('click', function() {
@@ -586,7 +703,7 @@
                                 list.style.display = 'none';
                             }
                         });
-                }, 300); // Espera 300ms al escribir
+                }, 300);
             });
 
             // Navegación con Teclado
@@ -629,7 +746,6 @@
                 }
             }
 
-            // Cerrar si clic fuera
             document.addEventListener('click', function(e) {
                 if (e.target !== input) {
                     list.style.display = 'none';
@@ -637,19 +753,17 @@
             });
         }
 
-        // BUSCAR ORDEN POR ID (Botón Revisar)
+        // BUSCAR ORDEN
         document.getElementById('btnBuscarOrden').addEventListener('click', function() {
             var num = document.getElementById('numeroBuscar').value;
             if (num.trim() !== '') {
-                // Redirige a /orden/espera/{id}
                 window.location.href = "{{ url('/orden/espera') }}/" + num;
             } else {
                 alert('Por favor ingrese un número de orden.');
             }
         });
 
-        // Actualizar enlace de informe con fechas
-        // Actualizar enlaces de informe con fechas
+        // HANDLE INPUT (Link Fechas)
         function handleInput() {
             const desde = document.getElementById('desde').value;
             const hasta = document.getElementById('hasta').value;
@@ -668,9 +782,6 @@
             if (btnInforme) btnInforme.href = "{{ route('informe') }}" + params;
             if (btnTransparencia) btnTransparencia.href = "{{ route('transparencia') }}" + params;
         }
-
-        // Inicializar enlace al cargar
-        document.addEventListener('DOMContentLoaded', handleInput);
     </script>
 </body>
 

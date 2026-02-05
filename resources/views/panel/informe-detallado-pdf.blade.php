@@ -6,12 +6,13 @@
     <title>Informe Detallado</title>
     <style>
         @page {
-            margin: 150px 20px 60px 20px;
+            margin: 120px 25px 70px 25px;
         }
 
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
+            margin-top: 30px;
         }
 
         /* Header Fixed */
@@ -20,7 +21,7 @@
             top: -130px;
             left: 0;
             right: 0;
-            height: 120px;
+            height: 130px;
         }
 
         /* Footer Fixed */
@@ -39,12 +40,16 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         th,
         td {
-            border: 1px solid black;
-            padding: 4px;
+            border: 1px solid #000;
+            padding: 6px;
+            font-size: 13px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
             text-align: center;
         }
 
@@ -116,16 +121,16 @@
 
     <!-- Paginación Script -->
     <script type="text/php">
-        if (isset($pdf)) {
-            $x = 720; 
-            $y = 100; /* Posición arriba derecha, en el header */
-            $text = "{PAGE_NUM}";
-            $font = null;
-            $size = 11;
-            $color = array(0,0,0);
-            $pdf->page_text($x, $y, $text, $font, $size, $color, 0.0, 0.0, 0.0);
-        }
+    if (isset($pdf)) {
+        $x = 720;
+        $y = 570;
+        $text = "Pág {PAGE_NUM} - {PAGE_COUNT}";
+        $size = 9;
+        $color = array(0,0,0);
+        $pdf->page_text($x, $y, $text, null, $size, $color);
+    }
     </script>
+
 
     <header>
         <table class="header-table">

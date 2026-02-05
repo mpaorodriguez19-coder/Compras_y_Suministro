@@ -12,6 +12,7 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
+            margin-top: 30px;
         }
 
         header {
@@ -124,10 +125,10 @@
     <script type="text/php">
         if (isset($pdf)) {
             $x = 520; 
-            $y = 115; 
-            $text = "{PAGE_NUM}";
+            $y = 750; 
+            $text = "Pág {PAGE_NUM} - {PAGE_COUNT}";
             $font = null;
-            $size = 11;
+            $size = 9;
             $color = array(0,0,0);
             $pdf->page_text($x, $y, $text, $font, $size, $color, 0.0, 0.0, 0.0);
         }

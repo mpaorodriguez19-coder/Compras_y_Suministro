@@ -13,18 +13,21 @@
         body {
             font-family: "Times New Roman", serif;
             font-size: 12px;
+             margin-top: 20px;
             color: #000;
         }
 
         header {
             position: fixed;
-            top: -140px;
+            top: -160px;
             left: 0;
             right: 0;
-            height: 130px;
+            height: 160px;
             text-align: center;
         }
-
+.contenido {
+    margin-top: 10px;
+}
         footer {
             position: fixed;
             bottom: -130px;
@@ -203,7 +206,7 @@
         /* FOOTER / FIRMAS */
         .firmas-container {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 50px;
         }
 
         .firma-box {

@@ -8,22 +8,23 @@ use App\Models\Orden;
 
 class PanelController extends Controller
 {
-     public function informeDetallado(Request $request) {
+    public function informeDetallado(Request $request) {
         $desde = $request->input('desde', now()->startOfMonth()->toDateString());
         $hasta = $request->input('hasta', now()->toDateString());
 
-        $ordenes = Orden::with(['proveedor', 'items'])
+        $query = Orden::with(['proveedor', 'items'])
                         ->whereDate('fecha', '>=', $desde)
                         ->whereDate('fecha', '<=', $hasta)
-                        ->orderBy('fecha', 'desc')
-                        ->get();
+                        ->orderBy('fecha', 'desc');
 
         if ($request->has('pdf')) {
+            $ordenes = $query->get();
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('panel.informe-detallado-pdf', compact('ordenes', 'desde', 'hasta'))
                   ->setPaper('letter', 'landscape');
             return $pdf->stream('informe_detallado.pdf');
         }
 
+        $ordenes = $query->paginate(20)->appends($request->all());
         return view('panel.informe-detallado', compact('ordenes', 'desde', 'hasta'));
     }
 
@@ -31,7 +32,7 @@ class PanelController extends Controller
         $desde = $request->input('desde', now()->startOfMonth()->toDateString());
         $hasta = $request->input('hasta', now()->toDateString());
 
-        $proveedores = Proveedor::whereHas('ordenes', function($q) use ($desde, $hasta){
+        $query = Proveedor::whereHas('ordenes', function($q) use ($desde, $hasta){
                             $q->whereDate('fecha', '>=', $desde)
                               ->whereDate('fecha', '<=', $hasta);
                         })
@@ -39,15 +40,16 @@ class PanelController extends Controller
                             $q->whereDate('fecha', '>=', $desde)
                               ->whereDate('fecha', '<=', $hasta)
                               ->orderBy('fecha', 'desc');
-                        }])
-                        ->get();
+                        }]);
 
         if ($request->has('pdf')) {
+            $proveedores = $query->get();
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('panel.compras-proveedor-pdf', compact('proveedores', 'desde', 'hasta'))
                   ->setPaper('letter', 'portrait');
             return $pdf->stream('compras_proveedor.pdf');
         }
 
+        $proveedores = $query->paginate(10)->appends($request->all());
         return view('panel.compras-proveedor', compact('proveedores', 'desde', 'hasta'));
     }
 
@@ -55,22 +57,23 @@ class PanelController extends Controller
         $desde = $request->input('desde', now()->startOfMonth()->toDateString());
         $hasta = $request->input('hasta', now()->toDateString());
 
-        $proveedores = Proveedor::whereHas('ordenes', function($q) use ($desde, $hasta){
+        $query = Proveedor::whereHas('ordenes', function($q) use ($desde, $hasta){
                             $q->whereDate('fecha', '>=', $desde)
                               ->whereDate('fecha', '<=', $hasta);
                         })
                         ->withSum(['ordenes' => function($q) use ($desde, $hasta){
                             $q->whereDate('fecha', '>=', $desde)
                               ->whereDate('fecha', '<=', $hasta);
-                        }], 'total')
-                        ->get();
+                        }], 'total');
         
         if ($request->has('pdf')) {
+            $proveedores = $query->get();
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('panel.resumen-proveedor-pdf', compact('proveedores', 'desde', 'hasta'))
                   ->setPaper('letter', 'portrait');
             return $pdf->stream('resumen_proveedor.pdf');
         }
 
+        $proveedores = $query->paginate(20)->appends($request->all());
         return view('panel.resumen-proveedor', compact('proveedores', 'desde', 'hasta'));
     }
 
@@ -78,18 +81,19 @@ class PanelController extends Controller
         $desde = $request->input('desde', now()->startOfMonth()->toDateString());
         $hasta = $request->input('hasta', now()->toDateString());
 
-        $ordenes = Orden::with('solicitante')
+        $query = Orden::with('solicitante')
                         ->whereDate('fecha', '>=', $desde)
                         ->whereDate('fecha', '<=', $hasta)
-                        ->orderBy('fecha', 'desc')
-                        ->get();
+                        ->orderBy('fecha', 'desc');
 
         if ($request->has('pdf')) {
+            $ordenes = $query->get();
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('panel.informe-pdf', compact('ordenes', 'desde', 'hasta'))
                   ->setPaper('letter', 'portrait');
             return $pdf->stream('informe_general.pdf');
         }
 
+        $ordenes = $query->paginate(20)->appends($request->all());
         return view('panel.informe', compact('ordenes', 'desde', 'hasta'));
     }
 
@@ -97,18 +101,19 @@ class PanelController extends Controller
         $desde = $request->input('desde', now()->startOfMonth()->toDateString());
         $hasta = $request->input('hasta', now()->toDateString());
 
-        $ordenes = Orden::with(['proveedor', 'items'])
+        $query = Orden::with(['proveedor', 'items'])
                         ->whereDate('fecha', '>=', $desde)
                         ->whereDate('fecha', '<=', $hasta)
-                        ->orderBy('fecha', 'desc')
-                        ->get();
+                        ->orderBy('fecha', 'desc');
 
         if ($request->has('pdf')) {
+            $ordenes = $query->get();
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('panel.transparencia_pdf', compact('ordenes', 'desde', 'hasta'))
-                ->setPaper('letter', 'landscape'); // Transparencia suele ser ancha
+                ->setPaper('letter', 'landscape');
             return $pdf->stream('transparencia.pdf');
         }
 
+        $ordenes = $query->paginate(20)->appends($request->all());
         return view('panel.transparencia', compact('ordenes', 'desde', 'hasta'));
     }
 

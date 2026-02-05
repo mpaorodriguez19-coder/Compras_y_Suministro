@@ -8,11 +8,12 @@
 </head>
 
 <body class="bg-light">
-    <div class="container py-4">
+    @include('partials.navbar')
+    <div class="container py-4 mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold">👥 Usuarios (Solicitantes)</h2>
             <div>
-                <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary me-2">🏠 Inicio</a>
+                {{-- <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary me-2">🏠 Inicio</a> --}}
                 <button class="btn btn-primary" onclick="abrirModal()">+ Nuevo Usuario</button>
             </div>
         </div>
@@ -83,7 +84,15 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label>Nombre Completo</label>
+                            <label>Identidad</label>
+                            <input type="text" name="identidad" id="userIdentidad" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Nombre</label>
+                            <input type="text" name="nombre" id="userNombre" class="form-control" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label>Nombre de Usuario</label>
                             <input type="text" name="name" id="userName" class="form-control" required>
                         </div>
                         <div class="mb-3">
@@ -96,6 +105,23 @@
                             <small class="text-danger d-none" id="passEditMsg">* Dejar en blanco para mantener la
                                 actual</small>
                         </div>
+                        <div class="mb-3">
+                            <label>Tipo / Nivel</label>
+                            <select name="nivel" id="userNivel" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="admin">Administrador</option>
+                                <option value="estandar">Estándar</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="activo" id="userActivo" checked>
+                            <label class="form-check-label" for="userActivo">
+                                Usuario Activo
+                            </label>
+                        </div>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -116,10 +142,65 @@
         const passEditMsg = document.getElementById('passEditMsg');
         const passInput = document.getElementById('userPass');
 
+        // Campos para autofill
+        const identidadInput = document.getElementById('userIdentidad');
+        const nombreInput = document.getElementById('userNombre'); // Readonly
+        const userNameInput = document.getElementById('userName');
+        const userEmailInput = document.getElementById('userEmail');
+
+        // Lógica de Autocompletado RRHH
+        identidadInput.addEventListener('blur', async function() {
+            const identidad = this.value;
+            if (identidad.length < 5) return; // Evitar búsquedas cortas
+
+            try {
+                // Mostrar estado de carga
+                nombreInput.value = "Buscando...";
+
+                const response = await fetch(`{{ route('api.rrhh.empleado') }}?identidad=${identidad}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Llenar campos
+                    nombreInput.value = data.data.name; // Nombre real (RRHH)
+                    userNameInput.value = data.data.username; // Sugerir como nombre de usuario (Aleatorio)
+
+                    // Generar correo sugerido: nombre.apellido@sistema.local
+                    // Limpiamos acentos y caracteres especiales para el email
+                    const cleanName = data.data.name.toLowerCase()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        .replace(/[^a-z0-9\s]/g, "")
+                        .split(" ");
+
+                    // Primer nombre + primer apellido (simple logic)
+                    if (cleanName.length >= 2) {
+                        const emailSuggested = `${cleanName[0]}.${cleanName[2] || cleanName[1]}@sistema.local`;
+                        userEmailInput.value = emailSuggested;
+                    }
+
+                    // Visual feedback
+                    identidadInput.classList.add('is-valid');
+                    identidadInput.classList.remove('is-invalid');
+                } else {
+                    nombreInput.value = ""; // Limpiar si no encuentra
+                    identidadInput.classList.add('is-invalid');
+                    identidadInput.classList.remove('is-valid');
+                    // Opcional: Mostrar toast o small text
+                }
+            } catch (error) {
+                console.error('Error fetching RRHH:', error);
+                nombreInput.value = "Error de conexión";
+            }
+        });
+
         function abrirModal() {
             form.action = "{{ route('usuarios.store') }}";
             methodField.innerHTML = '';
             title.innerText = "Nuevo Usuario";
+
+            identidadInput.value = "";
+            identidadInput.classList.remove('is-valid', 'is-invalid');
+            nombreInput.value = "";
 
             document.getElementById('userName').value = "";
             document.getElementById('userEmail').value = "";
@@ -135,6 +216,11 @@
             form.action = "{{ url('/usuarios') }}/" + id;
             methodField.innerHTML = '<input type="hidden" name="_method" value="PUT">';
             title.innerText = "Editar Usuario";
+
+            // En editar, quizás no queremos obligar a buscar por identidad de nuevo si ya existe,
+            // pero limpiamos los campos visuales de búsqueda
+            identidadInput.value = "";
+            nombreInput.value = "";
 
             document.getElementById('userName').value = name;
             document.getElementById('userEmail').value = email;

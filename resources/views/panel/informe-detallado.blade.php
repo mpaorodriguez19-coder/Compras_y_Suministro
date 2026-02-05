@@ -123,13 +123,16 @@
             }
         }
     </style>
+    <!-- Bootstrap for Pagination -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
 
     <!-- Botón de imprimir -->
-    <!-- Botón de imprimir -->
-    <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn-imprimir" target="_blank">📥 Descargar PDF</a>
+    <div class="d-flex gap-2" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn btn-primary">🖨️ Imprimir</a>
+    </div>
 
     <!-- CONTENEDOR TIPO PDF -->
     <div class="informe">
@@ -156,7 +159,7 @@
             <div class="info-der">
                 <img src="imagenes/logo_der.jpeg" class="logo"><br><br>
                 Fecha: <span id="fechaActual"></span><br>
-                Página: 1
+                <!-- Página: 1 -->
             </div>
 
         </div>
@@ -186,8 +189,8 @@
                             <td style="text-align:left;">{{ optional($orden->proveedor)->nombre }}</td>
                             <td style="text-align:left;">{{ $item->descripcion }}</td>
                             <td>{{ number_format($item->cantidad, 2) }}</td>
-                            <td>L. {{ number_format($item->precio_unitario, 2) }}</td>
-                            <td>L. {{ number_format($item->valor, 2) }}</td>
+                            <td style="text-align:right;">{{ number_format($item->precio_unitario, 2) }}</td>
+                            <td style="text-align:right;">L. {{ number_format($item->valor, 2) }}</td>
                         </tr>
                     @endforeach
                 @empty
@@ -197,6 +200,16 @@
                 @endforelse
             </tbody>
         </table>
+
+        <!-- PAGINACIÓN Y TOTAL DE PÁGINAS -->
+        <div class="d-flex justify-content-end align-items-center mt-4 gap-3">
+            <div class="d-print-none">
+                {{ $ordenes->links('pagination::bootstrap-5') }}
+            </div>
+            <div style="font-size: 14px; font-weight: bold;">
+                Pág {{ $ordenes->currentPage() }} - {{ $ordenes->lastPage() }}
+            </div>
+        </div>
 
     </div> <!-- FIN CONTENEDOR INFORME -->
 

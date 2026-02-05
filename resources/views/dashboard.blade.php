@@ -33,13 +33,9 @@
 </head>
 
 <body>
-    <div class="container py-5">
-        <div class="d-flex justify-content-end mb-4">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
-            </form>
-        </div>
+    @include('partials.navbar')
+
+    <div class="container py-5 mt-5">
 
         <div class="text-center mb-5">
             <h1 class="display-4 fw-bold text-dark">Compras y Suministros</h1>

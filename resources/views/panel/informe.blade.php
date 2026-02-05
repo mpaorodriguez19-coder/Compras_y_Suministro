@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Listado de Orden de Compra</title>
+    <!-- Bootstrap for Pagination -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -123,28 +125,13 @@
             border-top: 2px solid black;
         }
 
-        /* Botón de imprimir */
-        .btn-imprimir {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 1000;
-        }
-
-        .btn-imprimir:hover {
-            background-color: #0056b3;
-        }
-
+        /* Ocultar elementos al imprimir */
         @media print {
-            .btn-imprimir {
-                display: none;
+
+            .no-print,
+            .btn-primary,
+            .pagination-container {
+                display: none !important;
             }
 
             body {
@@ -155,6 +142,8 @@
                 box-shadow: none;
                 width: auto;
                 min-height: auto;
+                margin: 0;
+                padding: 0;
             }
         }
     </style>
@@ -163,7 +152,9 @@
 <body>
 
     <!-- Botón de imprimir -->
-    <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn-imprimir" target="_blank">📥 Descargar PDF</a>
+    <div class="d-flex gap-2" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn btn-primary">🖨️ Imprimir</a>
+    </div>
 
     <div class="informe">
 
@@ -183,7 +174,7 @@
             <div class="info-der">
                 <img src="imagenes/logo_der.jpeg" class="logo"><br><br>
                 Fecha: <span id="fechaActual"></span><br>
-                Página: 1
+                <!-- Página: 1 -->
             </div>
         </div>
 
@@ -202,7 +193,7 @@
                 </tr>
             </thead>
             <tbody>
-                @php $contador = 1; @endphp
+                @php $contador = ($ordenes->currentPage() - 1) * $ordenes->perPage() + 1; @endphp
                 @forelse($ordenes as $orden)
                     <tr>
                         <td class="numero">{{ $contador++ }}</td>
@@ -220,6 +211,16 @@
             </tbody>
         </table>
 
+        <!-- PAGINACIÓN Y TOTAL DE PÁGINAS -->
+        <div class="d-flex justify-content-end align-items-center mt-4 gap-3">
+            <div class="pagination-container d-print-none">
+                {{ $ordenes->links('pagination::bootstrap-5') }}
+            </div>
+            <div style="font-size: 14px; font-weight: bold;">
+                Pág {{ $ordenes->currentPage() }} - {{ $ordenes->lastPage() }}
+            </div>
+        </div>
+
         <!-- ESPACIO EN BLANCO -->
         <div style="flex-grow:1;"></div>
 
@@ -227,7 +228,7 @@
         <table>
             <tfoot>
                 <tr class="total-row">
-                    <td>TOTAL</td>
+                    <td>TOTAL (Página)</td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -245,10 +246,7 @@
             hoy.toLocaleDateString("es-HN");
 
         function imprimirInforme() {
-            const btn = document.querySelector('.btn-imprimir');
-            btn.style.display = 'none';
             window.print();
-            btn.style.display = 'block';
         }
 
         // Calcular total de la tabla arriba
@@ -256,10 +254,13 @@
             const celdas = document.querySelectorAll('#tablaArriba tbody td.valor');
             let suma = 0;
             celdas.forEach(celda => {
-                const valor = parseFloat(celda.textContent.replace(',', '')) || 0;
+                const valor = parseFloat(celda.textContent.replace(/,/g, '')) || 0;
                 suma += valor;
             });
-            document.getElementById('totalValor').textContent = suma.toFixed(2);
+            document.getElementById('totalValor').textContent = suma.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
 
         calcularTotal();

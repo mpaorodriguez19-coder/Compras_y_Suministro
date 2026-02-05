@@ -8,11 +8,12 @@
 </head>
 
 <body class="bg-light">
-    <div class="container py-4">
+    @include('partials.navbar')
+    <div class="container py-4 mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold">🏢 Proveedores</h2>
             <div>
-                <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary me-2">🏠 Inicio</a>
+                {{-- <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary me-2">🏠 Inicio</a> --}}
                 <button class="btn btn-primary" onclick="abrirModal()">+ Nuevo Proveedor</button>
             </div>
         </div>
@@ -29,6 +30,15 @@
         <!-- ALERTA -->
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if ($errors->any())
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var modal = new bootstrap.Modal(document.getElementById('modalProveedor'));
+                    modal.show();
+                });
+            </script>
         @endif
 
         <!-- TABLA -->
@@ -85,26 +95,50 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label>Nombre *</label>
-                            <input type="text" name="nombre" id="nombre" class="form-control" required>
+                            <label>Nombre</label>
+                            <input type="text" name="nombre" id="nombre"
+                                class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}"
+                                required>
+                            @error('nombre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label>RTN</label>
-                                <input type="text" name="rtn" id="rtn" class="form-control">
+                                <input type="text" name="rtn" id="rtn"
+                                    class="form-control @error('rtn') is-invalid @enderror" required minlength="14"
+                                    maxlength="14" value="{{ old('rtn') }}">
+                                @error('rtn')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label>Teléfono</label>
-                                <input type="text" name="telefono" id="telefono" class="form-control">
+                                <input type="text" name="telefono" id="telefono"
+                                    class="form-control @error('telefono') is-invalid @enderror"
+                                    value="{{ old('telefono') }}" required>
+                                @error('telefono')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="mb-3">
                             <label>Correo</label>
-                            <input type="email" name="correo" id="correo" class="form-control">
+                            <input type="email" name="correo" id="correo"
+                                class="form-control @error('correo') is-invalid @enderror" value="{{ old('correo') }}"
+                                required>
+                            @error('correo')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label>Dirección</label>
-                            <textarea name="direccion" id="direccion" class="form-control" rows="2"></textarea>
+                            <textarea name="direccion" id="direccion" class="form-control @error('direccion') is-invalid @enderror" rows="2"
+                                required>{{ old('direccion') }}</textarea>
+                            @error('direccion')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -122,6 +156,16 @@
         const form = document.getElementById('formProveedor');
         const modalTitle = document.getElementById('modalTitle');
         const methodDiv = document.getElementById('methodUpdate');
+
+        // Auto-search reset
+        const searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                if (this.value === '') {
+                    this.form.submit();
+                }
+            });
+        }
 
         function abrirModal() {
             form.reset();

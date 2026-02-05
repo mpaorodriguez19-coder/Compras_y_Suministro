@@ -83,7 +83,7 @@
         if (isset($pdf)) {
             $x = 520;
             $y = 750;
-            $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
+            $text = "Pág {PAGE_NUM} - {PAGE_COUNT}";
             $font = null;
             $size = 9;
             $color = array(0,0,0);
@@ -91,14 +91,34 @@
         }
     </script>
 
-    <header>
-        <h1>MUNICIPALIDAD DE DANLÍ</h1>
-        <h2>INFORME DE COMPRAS POR PROVEEDOR</h2>
-        <div>
-            <strong>PERÍODO:</strong> {{ \Carbon\Carbon::parse($desde)->format('d/m/Y') }} AL
-            {{ \Carbon\Carbon::parse($hasta)->format('d/m/Y') }}
+    <header
+        style="position: fixed; top: -100px; left: 0; right: 0; height: 90px; display: flex; align-items: center; justify-content: center; padding: 0 10px;">
+
+        <!-- Logo izquierdo -->
+        <div style="position: absolute; left: 0;">
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('imagenes/logo_izq.png'))) }}"
+                style="width:70px; height:auto;" alt="Logo Izquierdo">
         </div>
+
+        <!-- Texto central -->
+        <div style="text-align: center;">
+            <h1 style="margin:0; font-size:16pt;">MUNICIPALIDAD DE DANLÍ</h1>
+            <h2 style="margin:0; font-size:14pt;">INFORME DE COMPRAS POR PROVEEDOR</h2>
+            <div style="margin-top:5px; font-size:12pt;">
+                <strong>PERÍODO:</strong> {{ \Carbon\Carbon::parse($desde)->format('d/m/Y') }} AL
+                {{ \Carbon\Carbon::parse($hasta)->format('d/m/Y') }}
+            </div>
+        </div>
+
+        <!-- Logo derecho -->
+        <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%);">
+            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('imagenes/logo_der.jpeg'))) }}"
+                style="width:70px; height:auto;" alt="Logo Derecho">
+        </div>
+
+
     </header>
+
 
     <footer>
         <div style="float:left">Generado por: {{ auth()->user()->name ?? 'Sistema' }}</div>

@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Resumen de Compras por Proveedor</title>
+    <!-- Bootstrap for Pagination -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -80,27 +82,13 @@
             background-color: #eaeaea;
         }
 
-        .btn-imprimir {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 1000;
-        }
-
-        .btn-imprimir:hover {
-            background-color: #0056b3;
-        }
-
+        /* Ocultar elementos al imprimir */
         @media print {
-            .btn-imprimir {
-                display: none;
+
+            .no-print,
+            .btn-imprimir-container,
+            .pagination-container {
+                display: none !important;
             }
 
             body {
@@ -111,6 +99,8 @@
                 box-shadow: none;
                 width: auto;
                 min-height: auto;
+                margin: 0;
+                padding: 0;
             }
         }
     </style>
@@ -119,7 +109,9 @@
 <body>
 
     <!-- Botón de imprimir -->
-    <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn-imprimir" target="_blank">📥 Descargar PDF</a>
+    <div class="btn-imprimir-container d-flex gap-2" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        <a href="{{ request()->fullUrlWithQuery(['pdf' => 1]) }}" class="btn btn-primary">🖨️ Imprimir</a>
+    </div>
 
     <div class="informe">
         <div class="encabezado">
@@ -134,7 +126,8 @@
             </div>
             <div class="info-der">
                 <img src="imagenes/logo_der.jpeg" class="logo"><br><br>
-                Fecha: {{ date('d/m/Y') }}<br>Página: 1
+                Fecha: {{ date('d/m/Y') }}<br>
+                <!-- Página: 1 -->
             </div>
         </div>
         <div class="linea"></div>
@@ -151,7 +144,7 @@
                 @php $granTotal = 0; @endphp
                 @forelse($proveedores as $index => $proveedor)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $proveedores->firstItem() + $index }}</td>
                         <td style="text-align:left; padding-left:10px;">{{ $proveedor->nombre }}</td>
                         <td style="text-align:right; font-weight:bold;">L.
                             {{ number_format($proveedor->ordenes_sum_total, 2) }}</td>
@@ -165,11 +158,21 @@
 
                 <!-- GRAN TOTAL -->
                 <tr style="background-color: #f0f0f0; font-size: 14px;">
-                    <td colspan="2" style="text-align: right; font-weight: bold;">GRAN TOTAL:</td>
+                    <td colspan="2" style="text-align: right; font-weight: bold;">TOTAL PÁGINA:</td>
                     <td style="text-align: right; font-weight: bold;">L. {{ number_format($granTotal, 2) }}</td>
                 </tr>
             </tbody>
         </table>
+
+        <!-- PAGINACIÓN Y TOTAL DE PÁGINAS -->
+        <div class="d-flex justify-content-end align-items-center mt-4 gap-3">
+            <div class="pagination-container d-print-none">
+                {{ $proveedores->links('pagination::bootstrap-5') }}
+            </div>
+            <div style="font-size: 14px; font-weight: bold;">
+                Pág {{ $proveedores->currentPage() }} - {{ $proveedores->lastPage() }}
+            </div>
+        </div>
 
     </div>
 

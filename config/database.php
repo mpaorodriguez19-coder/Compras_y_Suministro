@@ -63,6 +63,20 @@ return [
             ]) : [],
         ],
 
+        'recursos_humanos' => [
+            'driver' => 'mysql',
+            'host' => env('DB_RRHH_HOST', '127.0.0.1'),
+            'port' => env('DB_RRHH_PORT', '3308'),
+            'database' => env('DB_RRHH_DATABASE', 'recursos_humanos'),
+            'username' => env('DB_RRHH_USERNAME', 'root'),
+            'password' => env('DB_RRHH_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

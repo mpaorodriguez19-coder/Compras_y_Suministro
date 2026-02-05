@@ -30,6 +30,12 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/orden/reponer', [OrdenController::class, 'index'])->name('orden.reponer'); 
     Route::get('/ordenes/crear', [OrdenController::class, 'index'])->name('ordenes.index');
     
+    // NUEVAS RUTAS DE GESTIÓN
+    Route::get('/ordenes/lista', [OrdenController::class, 'lista'])->name('ordenes.lista');
+    Route::get('/ordenes/{id}/editar', [OrdenController::class, 'edit'])->name('ordenes.edit');
+    Route::put('/ordenes/{id}', [OrdenController::class, 'update'])->name('ordenes.update');
+    Route::post('/ordenes/{id}/anular', [OrdenController::class, 'anular'])->name('ordenes.anular');
+
     Route::post('/orden/reponer/guardar', [OrdenController::class, 'store'])->name('orden.reponer.guardar');
     Route::get('/orden/espera/{id}', [OrdenController::class, 'verEspera'])->name('orden.espera');
     Route::get('/orden/{id}/pdf', [OrdenController::class, 'pdf'])->name('orden.pdf');
@@ -49,11 +55,15 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/admins', [App\Http\Controllers\AdminController::class, 'index'])->name('admins.index');
         Route::post('/admins', [App\Http\Controllers\AdminController::class, 'store'])->name('admins.store');
         Route::put('/admins/{id}', [App\Http\Controllers\AdminController::class, 'update'])->name('admins.update');
+
+        // BITÁCORA DE AUDITORÍA
+        Route::get('/bitacora', [App\Http\Controllers\BitacoraController::class, 'index'])->name('bitacora.index');
     });
 
     /* API AUTOCOMPLETADO */
     Route::get('/api/buscar-proveedores', [OrdenController::class, 'buscarProveedores'])->name('api.proveedores');
     Route::get('/api/buscar-usuarios', [OrdenController::class, 'buscarUsuarios'])->name('api.usuarios');
+    Route::get('/api/rrhh/empleado', [UserController::class, 'buscarEmpleadoRRHH'])->name('api.rrhh.empleado');
 
     /* PANELES Y REPORTES */
     Route::get('/informe-detallado', [PanelController::class, 'informeDetallado'])->name('informe.detallado');

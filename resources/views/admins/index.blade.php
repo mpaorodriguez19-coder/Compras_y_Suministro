@@ -8,11 +8,12 @@
 </head>
 
 <body class="bg-light">
-    <div class="container py-4">
+    @include('partials.navbar')
+    <div class="container py-4 mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold text-danger">👮‍♂️ Administradores del Sistema</h2>
             <div>
-                <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary me-2">🏠 Inicio</a>
+                {{-- <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary me-2">🏠 Inicio</a> --}}
                 <button class="btn btn-danger" onclick="abrirModal()">+ Nuevo Admin</button>
             </div>
         </div>
