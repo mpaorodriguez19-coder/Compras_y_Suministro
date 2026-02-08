@@ -13,13 +13,21 @@ use App\Http\Controllers\Auth\LoginController;
 ============================================== */
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
+Route::post('/setup/first-admin', [LoginController::class, 'setupFirstAdmin'])->name('setup.firstAdmin');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// RUTAS DE RECUPERACIÓN DE CONTRASEÑA
+Route::get('password/reset', [App\Http\Controllers\Auth\AdminForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [App\Http\Controllers\Auth\AdminForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [App\Http\Controllers\Auth\AdminResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [App\Http\Controllers\Auth\AdminResetPasswordController::class, 'reset'])->name('password.update');
 
 
 /* ==============================================
    RUTAS PROTEGIDAS (SISTEMA)
+   Solo accesibles si el usuario está logueado como 'admin'
 ============================================== */
-Route::middleware(['auth:admin'])->group(function () {
+Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
 
     // DASHBOARD PRINCIPAL
     Route::get('/', function () {
@@ -58,6 +66,11 @@ Route::middleware(['auth:admin'])->group(function () {
 
         // BITÁCORA DE AUDITORÍA
         Route::get('/bitacora', [App\Http\Controllers\BitacoraController::class, 'index'])->name('bitacora.index');
+
+        // RESPALDO Y RESTAURACIÓN
+        Route::get('/configuracion/backup', [App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
+        Route::get('/configuracion/backup/download', [App\Http\Controllers\BackupController::class, 'create'])->name('backup.create');
+        Route::post('/configuracion/backup/restore', [App\Http\Controllers\BackupController::class, 'restore'])->name('backup.restore');
     });
 
     /* API AUTOCOMPLETADO */

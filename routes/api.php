@@ -17,3 +17,5 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/empleados/buscar', [App\Http\Controllers\UserController::class, 'buscarEmpleadoRRHH'])->name('api.rrhh.empleado');

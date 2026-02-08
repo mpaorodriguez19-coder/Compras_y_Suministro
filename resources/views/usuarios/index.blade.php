@@ -39,7 +39,8 @@
                     <thead class="bg-light">
                         <tr>
                             <th>Nombre (Solicitante)</th>
-                            <th>Correo Electrónico</th>
+                            <th>Correo / DNI</th>
+                            <th>Teléfono</th>
                             <th>Fecha Creación</th>
                             <th>Acciones</th>
                         </tr>
@@ -48,11 +49,15 @@
                         @forelse($usuarios as $usuario)
                             <tr>
                                 <td>{{ $usuario->name }}</td>
-                                <td>{{ $usuario->email }}</td>
+                                <td>
+                                    <small class="d-block text-muted">{{ $usuario->dni }}</small>
+                                    {{ $usuario->email }}
+                                </td>
+                                <td>{{ $usuario->telefono ?? '-' }}</td>
                                 <td>{{ $usuario->created_at->format('d/m/Y') }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary"
-                                        onclick="editarUsuario({{ $usuario->id }}, '{{ $usuario->name }}', '{{ $usuario->email }}')">
+                                        onclick="editarUsuario({{ $usuario->id }}, '{{ $usuario->name }}', '{{ $usuario->email }}', '{{ $usuario->dni }}', '{{ $usuario->telefono }}', '{{ $usuario->direccion }}')">
                                         ✏️ Editar
                                     </button>
                                 </td>
@@ -83,9 +88,15 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
+
+
                         <div class="mb-3">
                             <label>Identidad</label>
-                            <input type="text" name="identidad" id="userIdentidad" class="form-control" required>
+                            <input type="text" name="dni" id="userIdentidad"
+                                class="form-control @error('dni') is-invalid @enderror" required>
+                            @error('dni')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label>Nombre</label>
@@ -93,27 +104,53 @@
                         </div>
                         <div class="mb-3">
                             <label>Nombre de Usuario</label>
-                            <input type="text" name="name" id="userName" class="form-control" required>
+                            <input type="text" name="name" id="userName"
+                                class="form-control @error('name') is-invalid @enderror" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label>Correo Electrónico</label>
-                            <input type="email" name="email" id="userEmail" class="form-control" required>
+                            <input type="email" name="email" id="userEmail"
+                                class="form-control @error('email') is-invalid @enderror" required>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label>Contraseña <small class="text-muted" id="passHelp">(Obligatoria)</small></label>
-                            <input type="password" name="password" id="userPass" class="form-control">
+                            <input type="password" name="password" id="userPass"
+                                class="form-control @error('password') is-invalid @enderror">
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             <small class="text-danger d-none" id="passEditMsg">* Dejar en blanco para mantener la
                                 actual</small>
                         </div>
                         <div class="mb-3">
-                            <label>Tipo / Nivel</label>
-                            <select name="nivel" id="userNivel" class="form-select" required>
-                                <option value="">Seleccione...</option>
-                                <option value="super_admin">Super Admin</option>
-                                <option value="admin">Administrador</option>
-                                <option value="estandar">Estándar</option>
-                            </select>
+                            <label>Teléfono</label>
+                            <input type="text" name="telefono" id="userTelefono"
+                                class="form-control @error('telefono') is-invalid @enderror">
+                            @error('telefono')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
+                        <div class="mb-3">
+                            <label>Dirección</label>
+                            <input type="text" name="direccion" id="userDireccion"
+                                class="form-control @error('direccion') is-invalid @enderror">
+                            @error('direccion')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        {{-- NO USAMOS ROL/NIVEL PARA USUARIOS ESTÁNDAR, SON APARTE DE ADMINS --}}
+                        {{-- 
+                        <div class="mb-3">
+                            <label>Tipo / Nivel</label>
+                            <select name="nivel" id="userNivel" class="form-select" required> ... </select> 
+                        </div> 
+                        --}}
 
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" name="activo" id="userActivo" checked>
@@ -132,7 +169,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const modal = new bootstrap.Modal(document.getElementById('modalUsuario'));
         const form = document.getElementById('formUsuario');
@@ -144,26 +180,31 @@
 
         // Campos para autofill
         const identidadInput = document.getElementById('userIdentidad');
-        const nombreInput = document.getElementById('userNombre'); // Readonly
+        const nombreInput = document.getElementById('userNombre');
         const userNameInput = document.getElementById('userName');
         const userEmailInput = document.getElementById('userEmail');
 
-        // Lógica de Autocompletado RRHH
+        const userTelefonoInput = document.getElementById('userTelefono');
+        const userDireccionInput = document.getElementById('userDireccion');
+
+        // Lógica de Autocompletado RRHH cuando cambia la Identidad
         identidadInput.addEventListener('blur', async function() {
             const identidad = this.value;
-            if (identidad.length < 5) return; // Evitar búsquedas cortas
+            if (identidad.length < 5) return;
+
+            // Feedback visual
+            nombreInput.value = "Buscando...";
+            identidadInput.classList.remove('is-valid', 'is-invalid');
 
             try {
-                // Mostrar estado de carga
-                nombreInput.value = "Buscando...";
-
-                const response = await fetch(`{{ route('api.rrhh.empleado') }}?identidad=${identidad}`);
+                const response = await fetch(`/api/empleados/buscar?identidad=${identidad}`);
                 const data = await response.json();
 
                 if (data.success) {
-                    // Llenar campos
-                    nombreInput.value = data.data.name; // Nombre real (RRHH)
-                    userNameInput.value = data.data.username; // Sugerir como nombre de usuario (Aleatorio)
+                    nombreInput.value = data.data.name;
+                    userNameInput.value = data.data.username; // Sugerencia de usuario base
+                    userTelefonoInput.value = data.data.telefono || '';
+                    userDireccionInput.value = data.data.direccion || '';
 
                     // Generar correo sugerido: nombre.apellido@sistema.local
                     // Limpiamos acentos y caracteres especiales para el email
@@ -174,65 +215,66 @@
 
                     // Primer nombre + primer apellido (simple logic)
                     if (cleanName.length >= 2) {
-                        const emailSuggested = `${cleanName[0]}.${cleanName[2] || cleanName[1]}@sistema.local`;
+                        // Usar primer nombre y (segundo apellido si existe, sino segundo nombre como fallback logic simple)
+                        // Mejor: Primer nombre + Primer Apellido (index 0 y index 2 usualmente en "Nombre1 Nombre2 Apellido1 Apellido2")
+                        // Pero data.name viene de la concatenación en el controlador.
+                        // Asumamos que cleanName tiene las partes.
+                        let apellido = cleanName[2] || cleanName[1] || 'user';
+                        const emailSuggested = `${cleanName[0]}.${apellido}@sistema.local`;
                         userEmailInput.value = emailSuggested;
                     }
 
-                    // Visual feedback
+                    // Visual feedback success
                     identidadInput.classList.add('is-valid');
                     identidadInput.classList.remove('is-invalid');
                 } else {
                     nombreInput.value = ""; // Limpiar si no encuentra
+                    userTelefonoInput.value = "";
+                    userDireccionInput.value = "";
+                    alert(data.message || 'No encontrado en RRHH');
+
+                    // Visual feedback error
                     identidadInput.classList.add('is-invalid');
-                    identidadInput.classList.remove('is-valid');
-                    // Opcional: Mostrar toast o small text
                 }
             } catch (error) {
-                console.error('Error fetching RRHH:', error);
+                console.error(error);
                 nombreInput.value = "Error de conexión";
+                alert('Error al consultar RRHH');
             }
         });
+
+        function editarUsuario(id, name, email, dni = '', telefono = '', direccion = '') {
+            form.action = `/usuarios/${id}`;
+            form.method = "POST";
+            methodField.innerHTML = '<input type="hidden" name="_method" value="PUT">';
+            title.innerText = "Editar Usuario";
+            passHelp.innerText = "(Opcional)";
+            passEditMsg.classList.remove('d-none');
+            passInput.required = false;
+
+            // Llenar campos
+            document.getElementById('userIdentidad').value = dni;
+            document.getElementById('userNombre').value = name; // En edit, nombre es name
+            document.getElementById('userName').value = name; // name y userName se usan igual aqui? (revisar controller)
+            document.getElementById('userEmail').value = email;
+            document.getElementById('userTelefono').value = telefono;
+            document.getElementById('userDireccion').value = direccion;
+
+            modal.show();
+        }
 
         function abrirModal() {
             form.action = "{{ route('usuarios.store') }}";
             methodField.innerHTML = '';
+            form.reset();
             title.innerText = "Nuevo Usuario";
-
-            identidadInput.value = "";
-            identidadInput.classList.remove('is-valid', 'is-invalid');
-            nombreInput.value = "";
-
-            document.getElementById('userName').value = "";
-            document.getElementById('userEmail').value = "";
-            passInput.value = "";
-            passInput.required = true;
             passHelp.innerText = "(Obligatoria)";
             passEditMsg.classList.add('d-none');
-
-            modal.show();
-        }
-
-        function editarUsuario(id, name, email) {
-            form.action = "{{ url('/usuarios') }}/" + id;
-            methodField.innerHTML = '<input type="hidden" name="_method" value="PUT">';
-            title.innerText = "Editar Usuario";
-
-            // En editar, quizás no queremos obligar a buscar por identidad de nuevo si ya existe,
-            // pero limpiamos los campos visuales de búsqueda
-            identidadInput.value = "";
-            nombreInput.value = "";
-
-            document.getElementById('userName').value = name;
-            document.getElementById('userEmail').value = email;
-
-            passInput.value = "";
-            passInput.required = false;
-            passHelp.innerText = "(Opcional)";
-            passEditMsg.classList.remove('d-none');
-
+            passInput.required = true;
             modal.show();
         }
     </script>
+
 </body>
 
 </html>

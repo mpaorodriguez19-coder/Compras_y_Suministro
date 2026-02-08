@@ -29,12 +29,18 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
+            'dni' => 'required|string|max:15',
+            'telefono' => 'nullable|string|max:15',
+            'direccion' => 'nullable|string|max:255',
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
+            'dni' => $request->dni,
+            'telefono' => $request->telefono,
+            'direccion' => $request->direccion,
         ]);
 
         return redirect()->back()->with('success', 'Usuario creado exitosamente');
@@ -47,11 +53,16 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id, 
+            'dni' => 'required|string|max:15',
+            'telefono' => 'nullable|string|max:15',
         ]);
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
+            'dni' => $request->dni,
+            'telefono' => $request->telefono,
+            'direccion' => $request->direccion,
         ];
 
         // Solo actualizar contraseña si se envía
@@ -73,7 +84,14 @@ class UserController extends Controller
         }
 
         try {
-            $empleado = \App\Models\EmpleadoRRHH::where('DNI', $identidad)->first();
+            // Buscar con guiones y sin guiones para flexibilidad
+            $dniLimpio = str_replace('-', '', $identidad);
+            $dniGuiones = substr($dniLimpio, 0, 4) . '-' . substr($dniLimpio, 4, 4) . '-' . substr($dniLimpio, 8);
+
+            $empleado = \App\Models\EmpleadoRRHH::where('DNI', $identidad)
+                ->orWhere('DNI', $dniLimpio)
+                ->orWhere('DNI', $dniGuiones)
+                ->first();
 
             if ($empleado) {
                 // Concatenar nombre completo

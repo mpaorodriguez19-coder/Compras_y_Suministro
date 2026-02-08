@@ -282,8 +282,7 @@
                                 style="width:120px;">Lugar:</label>
                             <input id="lugar" name="lugar" type="text"
                                 class="form-control form-control-sm shadow-sm @error('lugar') is-invalid @enderror"
-                                placeholder="Sede / ubicación" style="max-width:400px;"
-                                value="{{ old('lugar', isset($orden) ? $orden->lugar : 'DANLI, EL PARAISO') }}"
+                                placeholder="Sede / ubicación" style="max-width:400px;" value="{{ old('lugar', '') }}"
                                 required>
                             @error('lugar')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -354,7 +353,8 @@
                                         <input type="number" name="descuento_total" id="descTotalInput"
                                             class="form-control form-control-sm text-end p-0 pe-1 @error('descuento_total') is-invalid @enderror"
                                             style="width:80px; background:white;" step="0.01" placeholder="0.00"
-                                            value="{{ old('descuento_total', isset($orden) ? $orden->descuento : '') }}">
+                                            value="{{ old('descuento_total', isset($orden) ? $orden->descuento : '') }}"
+                                            onkeydown="return !['e', 'E', '+', '-'].includes(event.key)">
                                         @error('descuento_total')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -420,7 +420,7 @@
                     </a>
                     --}}
 
-                    <a href="{{ route('orden.reponer') }}" class="btn-as-panel">
+                    <a href="{{ route('orden.reponer') }}" class="btn-as-panel" target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#10b981,#34d399)">♻️</span>
                         Reponer
                     </a>
@@ -463,10 +463,10 @@
         //  DATOS DE VALIDACIÓN Y PERSISTENCIA
         // ==========================
         const oldData = {
-            cantidad: @json(old('cantidad', isset($orden) ? $orden->items->pluck('cantidad') : [])),
-            descripcion: @json(old('descripcion', isset($orden) ? $orden->items->pluck('descripcion') : [])),
-            unidad: @json(old('unidad', isset($orden) ? $orden->items->pluck('unidad') : [])),
-            precio: @json(old('precio_unitario', isset($orden) ? $orden->items->pluck('precio_unitario') : [])),
+            cantidad: @json(old('cantidad', isset($orden) ? $orden->items->pluck('cantidad') : [])).map(v => v === null ? '' : v),
+            descripcion: @json(old('descripcion', isset($orden) ? $orden->items->pluck('descripcion') : [])).map(v => v === null ? '' : v),
+            unidad: @json(old('unidad', isset($orden) ? $orden->items->pluck('unidad') : [])).map(v => v === null ? '' : v),
+            precio: @json(old('precio_unitario', isset($orden) ? $orden->items->pluck('precio_unitario') : [])).map(v => v === null ? '' : v),
             impuesto: @json(old('aplica_impuesto', []))
         };
 
@@ -493,7 +493,8 @@
                 <td>
                     <input type="number" name="cantidad[]" min="0" step="1" 
                            class="form-control form-control-sm no-arrows qty ${isInvalid('cantidad')}" 
-                           value="${cantidad}" />
+                           value="${cantidad}" 
+                           onkeydown="return !['e', 'E', '+', '-'].includes(event.key)" />
                     ${getError('cantidad') ? `<div class="invalid-feedback" style="font-size:10px">${getError('cantidad')}</div>` : ''}
                 </td>
                 <td>
@@ -518,7 +519,8 @@
                 <td>
                     <input type="number" name="precio_unitario[]" step="0.01" 
                            class="form-control form-control-sm no-arrows price ${isInvalid('precio_unitario')}" 
-                           value="${precio}" />
+                           value="${precio}" 
+                           onkeydown="return !['e', 'E', '+', '-'].includes(event.key)" />
                     ${getError('precio_unitario') ? `<div class="invalid-feedback d-block" style="font-size:10px">${getError('precio_unitario')}</div>` : ''}
                 </td>
                 <td><input type="text" name="valor[]" class="valor-read" readonly value="0.00" /></td>
@@ -640,14 +642,17 @@
                 descInput.onchange = calcularTotales;
             }
 
-            // 2. Autocomplete Proveedor
             setupAutocomplete(
                 document.getElementById('proveedor'),
                 document.getElementById('listaProveedores'),
                 '{{ route('api.proveedores') }}',
                 function(item) {
-                    document.getElementById('proveedor').value = item.nombre;
-                    if (item.direccion) document.getElementById('lugar').value = item.direccion;
+                    let displayText = item.nombre;
+                    if (item.rtn) {
+                        displayText += ` - ${item.rtn}`;
+                    }
+                    document.getElementById('proveedor').value = displayText;
+                    // document.getElementById('lugar').value = ""; // Usuario pide manual
                 }
             );
 
@@ -691,8 +696,15 @@
                                 data.forEach(item => {
                                     const div = document.createElement('div');
                                     div.classList.add('autocomplete-item');
-                                    div.innerHTML =
-                                        `<strong>${item.nombre || item.name}</strong>`;
+
+                                    let label = item.name || item.nombre;
+                                    if (item.rtn) {
+                                        label +=
+                                            ` - <small class='text-muted'>${item.rtn}</small>`;
+                                    }
+
+                                    div.innerHTML = `<strong>${label}</strong>`;
+
                                     div.addEventListener('click', function() {
                                         onSelect(item);
                                         list.style.display = 'none';
@@ -757,7 +769,7 @@
         document.getElementById('btnBuscarOrden').addEventListener('click', function() {
             var num = document.getElementById('numeroBuscar').value;
             if (num.trim() !== '') {
-                window.location.href = "{{ url('/orden/espera') }}/" + num;
+                window.open("{{ url('/orden/espera') }}/" + num, '_blank');
             } else {
                 alert('Por favor ingrese un número de orden.');
             }
@@ -781,6 +793,21 @@
             if (btnResumen) btnResumen.href = "{{ route('resumen.proveedor') }}" + params;
             if (btnInforme) btnInforme.href = "{{ route('informe') }}" + params;
             if (btnTransparencia) btnTransparencia.href = "{{ route('transparencia') }}" + params;
+        }
+        // Manejar envío del formulario para abrir en nueva pestaña y recargar
+        const formOrden = document.getElementById('ordenForm');
+        if (formOrden) {
+            formOrden.addEventListener('submit', function(e) {
+                // Solo si es crear (no tiene ID en la URL de action, o verificamos si hay input hidden _method PUT)
+                const isEdit = document.querySelector('input[name="_method"][value="PUT"]');
+
+                if (!isEdit) {
+                    e.target.target = '_blank';
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000); // Retraso de 1s para asegurar el envío
+                }
+            });
         }
     </script>
 </body>

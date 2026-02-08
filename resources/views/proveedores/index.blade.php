@@ -150,7 +150,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         const modal = new bootstrap.Modal(document.getElementById('modalProveedor'));
         const form = document.getElementById('formProveedor');
@@ -181,7 +181,8 @@
         }
 
         function editar(data) {
-            form.action = `/proveedores/${data.id}`;
+            var baseUrl = "{{ route('proveedores.index') }}";
+            form.action = `${baseUrl}/${data.id}`;
             methodDiv.innerHTML = '<input type="hidden" name="_method" value="PUT">';
             modalTitle.textContent = "Editar Proveedor";
 

@@ -96,12 +96,26 @@ class OrdenController extends Controller
             // $ultimo, $numero logic removed (handled inside transaction atomically)
             // dd($request->all());
             // 1. GESTIONAR PROVEEDOR (VALIDAR EXISTENCIA)
-            $proveedorNombre = trim($request->proveedor);
+            $proveedorInput = trim($request->proveedor);
             
-            $proveedorObj = Proveedor::where('nombre', $proveedorNombre)->first();
+            // Intentar separar por " - " (formato del frontend)
+            $parts = explode(' - ', $proveedorInput);
+            
+            if (count($parts) > 1) {
+                // Asumimos que el último es el RTN y el resto es el Nombre
+                $rtnPosible = array_pop($parts);
+                $nombrePosible = implode(' - ', $parts); // Por si el nombre tenía guiones
+                
+                $proveedorObj = Proveedor::where('nombre', $nombrePosible)
+                                ->orWhere('rtn', $rtnPosible)
+                                ->first();
+            } else {
+                // Búsqueda directa por nombre (Legacy)
+                $proveedorObj = Proveedor::where('nombre', $proveedorInput)->first();
+            }
 
             if (!$proveedorObj) {
-                return back()->withInput()->with('error', 'El proveedor "' . $proveedorNombre . '" no existe. Por favor agréguelo primero en la sección de Proveedores.');
+                return back()->withInput()->with('error', 'El proveedor "' . $proveedorInput . '" no existe. Por favor agréguelo primero en la sección de Proveedores.');
             }
 
             // Actualizar datos si vienen en el request (Opcional, pero útil si se quiere mantener actualizado)
@@ -240,10 +254,13 @@ class OrdenController extends Controller
     // BUSCAR PROVEEDORES (AJAX)
     public function buscarProveedores(Request $request) {
         $q = $request->get('q');
-        $query = Proveedor::select('id', 'nombre', 'direccion');
+        $query = Proveedor::select('id', 'nombre', 'rtn', 'direccion');
         
         if (!empty($q)) {
-            $query->where('nombre', 'like', "%{$q}%");
+            $query->where(function($sql) use ($q) {
+                $sql->where('nombre', 'like', "%{$q}%")
+                    ->orWhere('rtn', 'like', "%{$q}%");
+            });
         }
         
         return $query->orderBy('nombre')->limit(20)->get();
@@ -331,10 +348,23 @@ class OrdenController extends Controller
 
         try {
             // 1. Proveedor
-            $proveedorNombre = trim($request->proveedor);
-            $proveedorObj = Proveedor::where('nombre', $proveedorNombre)->first();
+            $proveedorInput = trim($request->proveedor);
+            
+             // Intentar separar por " - " (formato del frontend)
+             $parts = explode(' - ', $proveedorInput);
+            
+             if (count($parts) > 1) {
+                 $rtnPosible = array_pop($parts);
+                 $nombrePosible = implode(' - ', $parts);
+                 
+                 $proveedorObj = Proveedor::where('nombre', $nombrePosible)
+                                 ->orWhere('rtn', $rtnPosible)
+                                 ->first();
+             } else {
+                 $proveedorObj = Proveedor::where('nombre', $proveedorInput)->first();
+             }
             if (!$proveedorObj) {
-                return back()->withInput()->with('error', "El proveedor '$proveedorNombre' no existe.");
+                return back()->withInput()->with('error', "El proveedor '$proveedorInput' no existe.");
             }
 
              // 2. Solicitante
@@ -409,42 +439,30 @@ class OrdenController extends Controller
     }
 
     // ANULAR ORDEN (Checkeo de seguridad)
+    // ANULAR ORDEN
     public function anular(Request $request, $id)
     {
         $orden = Orden::findOrFail($id);
-
-        // Validar Credenciales de Admin si el usuario actual NO es super admin
-        // Asumimos que auth('admin')->user() es el usuario logueado.
-        // Si hay roles, verificamos rol.
         
-        $currentUser = auth('admin')->user();
-        $isSuperAdmin = ($currentUser && $currentUser->role === 'super_admin');
+        // Validación de observación obligatoria
+        $request->validate([
+            'observacion' => 'required|string|min:5|max:500', 
+        ], [
+            'observacion.required' => 'Es necesario agregar una observación para anular.',
+            'observacion.min' => 'La observación debe tener al menos 5 caracteres.'
+        ]);
 
-        if (!$isSuperAdmin) {
-            // Verificar credenciales enviadas
-            $request->validate([
-                'admin_email' => 'required|email',
-                'admin_password' => 'required',
-            ]);
-
-            $credentials = ['email' => $request->admin_email, 'password' => $request->admin_password];
-            
-            // Intentamos autenticar "manualmente" contra la tabla de admins para verificar privilegios
-            if (!auth('admin')->attempt($credentials)) {
-                 return back()->with('error', 'Credenciales de administrador incorrectas. No se pudo anular.');
-            }
-            
-            // Verificar si ese usuario autenticado es super admin
-            $adminUser = \App\Models\Admin::where('email', $request->admin_email)->first();
-            if (!$adminUser || $adminUser->role !== 'super_admin') {
-                 return back()->with('error', 'El usuario ingresado no tiene permisos de Super Admin para anular.');
-            }
-        }
+        // Ya no requerimos credenciales de Super Admin explicítas, 
+        // asumimos que si tiene acceso a esta ruta (protegida por middleware auth:admin) es suficiente,
+        // o si se requiere validación extra, se podría implementar, pero el usuario pidió quitarlo.
 
         // Proceder a anular
-        $orden->update(['estado' => 'anulada']);
+        $orden->update([
+            'estado' => 'anulada',
+            'observacion' => $request->observacion
+        ]);
         
-        \App\Services\BitacoraLogger::log("Anuló la orden #{$orden->numero}", 'Ordenes');
+        \App\Services\BitacoraLogger::log("Anuló la orden #{$orden->numero}. Motivo: {$request->observacion}", 'Ordenes');
         
         return back()->with('success', "Orden #{$orden->numero} anulada correctamente.");
     }

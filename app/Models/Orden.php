@@ -25,7 +25,8 @@ class Orden extends Model
         'descuento',
         'impuesto',
         'total',
-        'estado'
+        'estado',
+        'observacion'
     ];
 
     // 🔹 RELACIÓN CON LOS ITEMS (OrdenItem)

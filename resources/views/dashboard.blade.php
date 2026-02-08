@@ -78,18 +78,27 @@
             </div>
 
             <!-- Tarjeta 4: Administradores (Solo Super Admin) -->
-            @if (Auth::guard('admin')->user()->role === 'super_admin')
-                <div class="col-md-4 col-lg-3">
-                    <a href="{{ route('admins.index') }}"
-                        class="card card-dashboard border-0 shadow-sm text-center p-4">
-                        <div class="card-body">
-                            <div class="icon-large text-danger">👮‍♂️</div>
-                            <h4 class="card-title fw-bold">Administradores</h4>
-                            <p class="card-text text-muted">Crear nuevos admins</p>
-                        </div>
-                    </a>
-                </div>
-            @endif
+
+            <div class="col-md-4 col-lg-3">
+                <a href="{{ route('admins.index') }}" class="card card-dashboard border-0 shadow-sm text-center p-4">
+                    <div class="card-body">
+                        <div class="icon-large text-danger">👮‍♂️</div>
+                        <h4 class="card-title fw-bold">Administradores</h4>
+                        <p class="card-text text-muted">Crear nuevos admins</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- CONFIGURACIÓN Y RESPALDO -->
+            <div class="col-md-4 col-lg-3">
+                <a href="{{ route('backup.index') }}" class="card card-dashboard border-0 shadow-sm text-center p-4">
+                    <div class="card-body">
+                        <div class="icon-large text-secondary">⚙️</div>
+                        <h4 class="card-title fw-bold">Configuración</h4>
+                        <p class="card-text text-muted">Respaldos y Restauración</p>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <div class="text-center mt-5 text-muted small">

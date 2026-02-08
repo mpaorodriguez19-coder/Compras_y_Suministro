@@ -5,7 +5,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Municipalidad de Danlí</title>
+    <!-- FIRST RUN SETUP MODAL -->
+    @if (isset($needsSetup) && $needsSetup)
+        <div class="modal fade" id="modalSetup" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('setup.firstAdmin') }}" method="POST">
+                        @csrf
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">⚠️ Configuración Inicial Requerida</h5>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-danger fw-bold">No se ha detectado ningún Administrador.</p>
+                            <p>Para asegurar el sistema, debe crear una cuenta de <strong>Super Administrador</strong>
+                                ahora mismo.</p>
+                            <p class="small text-muted">Se descargará un archivo con estos datos automáticamente.</p>
+
+                            <div class="mb-3">
+                                <label>Nombre Completo</label>
+                                <input type="text" name="name" class="form-control" required
+                                    placeholder="Ej: Administrador Principal">
+                            </div>
+                            <div class="mb-3">
+                                <label>Correo Electrónico</label>
+                                <input type="email" name="email" class="form-control" required
+                                    placeholder="admin@sistema.local">
+                            </div>
+                            <div class="mb-3">
+                                <label>Contraseña</label>
+                                <input type="password" name="password" class="form-control" required minlength="6">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-danger w-100">Crear Super Admin y Acceder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var myModal = new bootstrap.Modal(document.getElementById('modalSetup'));
+                myModal.show();
+            });
+        </script>
+    @endif
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #0ea5a4 0%, #06b6d4 100%);
@@ -94,6 +141,10 @@
 
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary py-2 fw-bold">INGRESAR</button>
+                    <a href="{{ route('password.request') }}"
+                        class="btn btn-link btn-sm text-secondary text-decoration-none">
+                        ¿Olvidaste tu contraseña?
+                    </a>
                 </div>
             </form>
         </div>
