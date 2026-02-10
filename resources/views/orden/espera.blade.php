@@ -312,7 +312,12 @@
 
 <body>
 
-    <a href="{{ route('orden.pdf', $orden->id) }}" class="btn-imprimir" target="_blank">🖨 Imprimir</a>
+    <div style="position: fixed; top: 20px; right: 20px; display:flex; gap:10px;">
+        <a href="{{ route('orden.pdf', ['id' => $orden->id, 'tipo' => 'copia']) }}" class="btn-imprimir"
+            style="background: #6c757d;" target="_blank">📄 Imprimir Copia</a>
+        <a href="{{ route('orden.pdf', ['id' => $orden->id, 'tipo' => 'original']) }}" class="btn-imprimir"
+            target="_blank">🖨 Imprimir Original</a>
+    </div>
 
     <div class="hoja">
 

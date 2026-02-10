@@ -57,7 +57,7 @@
                                 <td>{{ $usuario->created_at->format('d/m/Y') }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary"
-                                        onclick="editarUsuario({{ $usuario->id }}, '{{ $usuario->name }}', '{{ $usuario->email }}', '{{ $usuario->dni }}', '{{ $usuario->telefono }}', '{{ $usuario->direccion }}')">
+                                        data-user='@json($usuario)' onclick="editarUsuario(this)">
                                         ✏️ Editar
                                     </button>
                                 </td>
@@ -98,15 +98,30 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="mb-3">
-                            <label>Nombre</label>
-                            <input type="text" name="nombre" id="userNombre" class="form-control" readonly>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Nombres</label>
+                                <input type="text" name="nombres" id="userNombres"
+                                    class="form-control @error('nombres') is-invalid @enderror" required>
+                                @error('nombres')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Apellidos</label>
+                                <input type="text" name="apellidos" id="userApellidos"
+                                    class="form-control @error('apellidos') is-invalid @enderror" required>
+                                @error('apellidos')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
+
                         <div class="mb-3">
-                            <label>Nombre de Usuario</label>
-                            <input type="text" name="name" id="userName"
-                                class="form-control @error('name') is-invalid @enderror" required>
-                            @error('name')
+                            <label>Nombre de Usuario (Login)</label>
+                            <input type="text" name="username" id="userUsername"
+                                class="form-control @error('username') is-invalid @enderror" required>
+                            @error('username')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -180,8 +195,9 @@
 
         // Campos para autofill
         const identidadInput = document.getElementById('userIdentidad');
-        const nombreInput = document.getElementById('userNombre');
-        const userNameInput = document.getElementById('userName');
+        const nombresInput = document.getElementById('userNombres');
+        const apellidosInput = document.getElementById('userApellidos');
+        const usernameInput = document.getElementById('userUsername');
         const userEmailInput = document.getElementById('userEmail');
 
         const userTelefonoInput = document.getElementById('userTelefono');
@@ -193,42 +209,28 @@
             if (identidad.length < 5) return;
 
             // Feedback visual
-            nombreInput.value = "Buscando...";
+            nombresInput.value = "Buscando...";
+            apellidosInput.value = "Buscando...";
             identidadInput.classList.remove('is-valid', 'is-invalid');
 
             try {
-                const response = await fetch(`/api/empleados/buscar?identidad=${identidad}`);
+                const response = await fetch(`/api/rrhh/empleado?identidad=${identidad}`);
                 const data = await response.json();
 
                 if (data.success) {
-                    nombreInput.value = data.data.name;
-                    userNameInput.value = data.data.username; // Sugerencia de usuario base
-                    userTelefonoInput.value = data.data.telefono || '';
-                    userDireccionInput.value = data.data.direccion || '';
-
-                    // Generar correo sugerido: nombre.apellido@sistema.local
-                    // Limpiamos acentos y caracteres especiales para el email
-                    const cleanName = data.data.name.toLowerCase()
-                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                        .replace(/[^a-z0-9\s]/g, "")
-                        .split(" ");
-
-                    // Primer nombre + primer apellido (simple logic)
-                    if (cleanName.length >= 2) {
-                        // Usar primer nombre y (segundo apellido si existe, sino segundo nombre como fallback logic simple)
-                        // Mejor: Primer nombre + Primer Apellido (index 0 y index 2 usualmente en "Nombre1 Nombre2 Apellido1 Apellido2")
-                        // Pero data.name viene de la concatenación en el controlador.
-                        // Asumamos que cleanName tiene las partes.
-                        let apellido = cleanName[2] || cleanName[1] || 'user';
-                        const emailSuggested = `${cleanName[0]}.${apellido}@sistema.local`;
-                        userEmailInput.value = emailSuggested;
-                    }
+                    nombresInput.value = data.nombres;
+                    apellidosInput.value = data.apellidos;
+                    usernameInput.value = data.username;
+                    userEmailInput.value = data.email_sugerido;
+                    userTelefonoInput.value = data.telefono || '';
+                    userDireccionInput.value = data.direccion || '';
 
                     // Visual feedback success
                     identidadInput.classList.add('is-valid');
                     identidadInput.classList.remove('is-invalid');
                 } else {
-                    nombreInput.value = ""; // Limpiar si no encuentra
+                    nombresInput.value = "";
+                    apellidosInput.value = "";
                     userTelefonoInput.value = "";
                     userDireccionInput.value = "";
                     alert(data.message || 'No encontrado en RRHH');
@@ -238,27 +240,36 @@
                 }
             } catch (error) {
                 console.error(error);
-                nombreInput.value = "Error de conexión";
+                nombresInput.value = ""; // Limpiar error msg
+                apellidosInput.value = "";
                 alert('Error al consultar RRHH');
             }
         });
 
-        function editarUsuario(id, name, email, dni = '', telefono = '', direccion = '') {
-            form.action = `/usuarios/${id}`;
-            form.method = "POST";
+        // Pre-generar la URL base para el update (placeholder ID será reemplazado)
+        const updateRouteBase = "{{ route('usuarios.update', ['id' => 'ID_PLACEHOLDER']) }}";
+
+        function editarUsuario(button) {
+            const user = JSON.parse(button.getAttribute('data-user'));
+
+            // Reemplazar el placeholder con el ID real
+            form.action = updateRouteBase.replace('ID_PLACEHOLDER', user.id);
+
             methodField.innerHTML = '<input type="hidden" name="_method" value="PUT">';
             title.innerText = "Editar Usuario";
             passHelp.innerText = "(Opcional)";
             passEditMsg.classList.remove('d-none');
             passInput.required = false;
 
-            // Llenar campos
-            document.getElementById('userIdentidad').value = dni;
-            document.getElementById('userNombre').value = name; // En edit, nombre es name
-            document.getElementById('userName').value = name; // name y userName se usan igual aqui? (revisar controller)
-            document.getElementById('userEmail').value = email;
-            document.getElementById('userTelefono').value = telefono;
-            document.getElementById('userDireccion').value = direccion;
+            // Llenar campos con los datos del objeto user
+            // Nota: Para usuarios antiguos, nombres/apellidos/username pueden ser null
+            document.getElementById('userIdentidad').value = user.dni || '';
+            document.getElementById('userNombres').value = user.nombres || '';
+            document.getElementById('userApellidos').value = user.apellidos || '';
+            document.getElementById('userUsername').value = user.username || '';
+            document.getElementById('userEmail').value = user.email || '';
+            document.getElementById('userTelefono').value = user.telefono || '';
+            document.getElementById('userDireccion').value = user.direccion || '';
 
             modal.show();
         }

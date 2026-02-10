@@ -26,16 +26,21 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nombres' => 'required|string|max:255',
+            'apellidos' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'dni' => 'required|string|max:15',
-            'telefono' => 'nullable|string|max:15',
+            'dni' => 'required|string|max:20',
+            'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:255',
         ]);
 
         User::create([
-            'name' => $request->name,
+            'name' => $request->nombres . ' ' . $request->apellidos, // Mantener compatibilidad con 'name'
+            'username' => $request->username,
+            'nombres' => $request->nombres,
+            'apellidos' => $request->apellidos,
             'email' => $request->email,
             'password' => $request->password,
             'dni' => $request->dni,
@@ -51,14 +56,20 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id, 
-            'dni' => 'required|string|max:15',
-            'telefono' => 'nullable|string|max:15',
+            'nombres' => 'required|string|max:255',
+            'apellidos' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'dni' => 'required|string|max:20',
+            'telefono' => 'nullable|string|max:20',
         ]);
 
+
         $data = [
-            'name' => $request->name,
+            'name' => $request->nombres . ' ' . $request->apellidos,
+            'username' => $request->username,
+            'nombres' => $request->nombres,
+            'apellidos' => $request->apellidos,
             'email' => $request->email,
             'dni' => $request->dni,
             'telefono' => $request->telefono,
@@ -94,28 +105,20 @@ class UserController extends Controller
                 ->first();
 
             if ($empleado) {
-                // Concatenar nombre completo
-                $nombreCompleto = trim(
-                    ($empleado->primer_nombre ?? '') . ' ' .
-                    ($empleado->segundo_nombre ?? '') . ' ' .
-                    ($empleado->primer_apellido ?? '') . ' ' .
-                    ($empleado->segundo_apellido ?? '')
-                );
-
-                // Generar nombre de usuario aleatorio: nombre.apellido + 3 digitos
-                $baseUser = strtolower(($empleado->primer_nombre ?? 'user') . '.' . ($empleado->primer_apellido ?? 'new'));
-                $randomUser = $baseUser . rand(100, 999);
+                // Generar sugerencia de usuario: primera_letra_nombre + apellido
+                $primerNombre = strtolower($empleado->primer_nombre ?? '');
+                $primerApellido = strtolower($empleado->primer_apellido ?? '');
+                $username = substr($primerNombre, 0, 1) . $primerApellido;
 
                 return response()->json([
                     'success' => true,
-                    'data' => [
-                        'name' => $nombreCompleto,
-                        'username' => $randomUser,
-                        // Generar email sugerido si no tiene (opcional, aqui solo devolvemos el dato crudo si existiera email en rrhh, pero la tabla no tiene email explícito, usaremos el nombre para sugerir)
-                        'dni' => $empleado->DNI,
-                        'telefono' => $empleado->telefono_celular,
-                        'direccion' => $empleado->direccion_domicilio
-                    ]
+                    'nombres' => trim(($empleado->primer_nombre ?? '') . ' ' . ($empleado->segundo_nombre ?? '')),
+                    'apellidos' => trim(($empleado->primer_apellido ?? '') . ' ' . ($empleado->segundo_apellido ?? '')),
+                    'username' => $username,
+                    'dni' => $empleado->DNI,
+                    'telefono' => $empleado->telefono_celular,
+                    'direccion' => $empleado->direccion_domicilio,
+                    'email_sugerido' => $username . '@sistema.local'
                 ]);
             } else {
                 return response()->json(['success' => false, 'message' => 'No encontrado en RRHH.']); 

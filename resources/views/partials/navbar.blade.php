@@ -45,6 +45,12 @@
                             🛡️ Bitácora
                         </a>
                     </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2"
+                            href="{{ route('configuracion.index') }}">
+                            ⚙️ Configuración
+                        </a>
+                    </li>
                 @endif
                 <li>
                     <hr class="dropdown-divider">

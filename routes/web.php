@@ -35,7 +35,7 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
     })->name('dashboard');
 
     /* GESTIÓN DE ÓRDENES (LEGACY & NEW) */
-    Route::get('/orden/reponer', [OrdenController::class, 'index'])->name('orden.reponer'); 
+    Route::get('/orden/reponer', [OrdenController::class, 'reponer'])->name('orden.reponer'); 
     Route::get('/ordenes/crear', [OrdenController::class, 'index'])->name('ordenes.index');
     
     // NUEVAS RUTAS DE GESTIÓN
@@ -71,6 +71,10 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
         Route::get('/configuracion/backup', [App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
         Route::get('/configuracion/backup/download', [App\Http\Controllers\BackupController::class, 'create'])->name('backup.create');
         Route::post('/configuracion/backup/restore', [App\Http\Controllers\BackupController::class, 'restore'])->name('backup.restore');
+
+        // CONFIGURACIÓN DEL SISTEMA
+        Route::get('/configuracion', [App\Http\Controllers\ConfiguracionController::class, 'index'])->name('configuracion.index');
+        Route::put('/configuracion', [App\Http\Controllers\ConfiguracionController::class, 'update'])->name('configuracion.update');
     });
 
     /* API AUTOCOMPLETADO */
@@ -92,5 +96,16 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
     
     Route::get('/transparencia', [PanelController::class, 'transparencia'])->name('transparencia');
     Route::get('/panel/transparencia', [PanelController::class, 'transparencia']);
+
+    // DEBUG TEMPORAL
+    Route::get('/debug/force-sequence/{id}', function ($id) {
+        try {
+            DB::statement("ALTER TABLE ordenes AUTO_INCREMENT = $id");
+            $status = DB::select("SHOW TABLE STATUS LIKE 'ordenes'");
+            return response()->json(['status' => 'success', 'new_auto_increment' => $status[0]->Auto_increment]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    });
 
 });

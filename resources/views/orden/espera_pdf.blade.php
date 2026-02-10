@@ -6,34 +6,37 @@
     <title>Orden de Compra {{ $orden->numero }}</title>
     <style>
         @page {
-            margin: 160px 40px 150px 40px;
-            /* Margenes para header y footer */
+            size: letter portrait;
+            margin: 240px 60px 220px 60px;
+            /* Margenes Aumentados Superior */
         }
 
         body {
             font-family: "Times New Roman", serif;
-            font-size: 12px;
-             margin-top: 20px;
+            font-size: 11px;
+            margin-top: 20px;
             color: #000;
         }
 
         header {
             position: fixed;
-            top: -160px;
+            top: -200px;
             left: 0;
             right: 0;
-            height: 160px;
+            height: 165px;
             text-align: center;
         }
-.contenido {
-    margin-top: 10px;
-}
+
+        .contenido {
+            margin-top: 0px;
+        }
+
         footer {
             position: fixed;
-            bottom: -130px;
+            bottom: -180px;
             left: 0;
             right: 0;
-            height: 120px;
+            height: 140px;
         }
 
         /* TABLA DE ITEMS */
@@ -259,7 +262,10 @@
         <p class="telefonos">Teléfono: 2763-2080/2763-2405 Telefax: 2763-2638</p>
 
         <div class="box-orden">
-            ORDEN DE COMPRA No. <span class="numero-rojo">{{ $orden->numero }}</span>
+            ORDEN DE COMPRA <span class="numero-rojo">{{ $orden->numero }}</span>
+            <div style="font-size:10px; color: #555; margin-top:2px;">
+                {{ strtoupper($tipo ?? 'ORIGINAL') }}
+            </div>
         </div>
         <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('imagenes/logo_der.jpeg'))) }}"
             class="logo-der">
@@ -303,15 +309,18 @@
         <div class="firmas-container">
             <div class="firma-box">
                 <span class="linea-firma"></span>
-                <strong>Jefe de Compras</strong>
+                <div style="font-size: 11px; margin-bottom: 2px;">{{ $configs['firma_oc_nombre_1'] ?? '' }}</div>
+                <strong>{{ $configs['firma_oc_puesto_1'] ?? 'Jefe de Compras' }}</strong>
             </div>
             <div class="firma-box">
                 <span class="linea-firma"></span>
-                <strong>Gerente Administrativo</strong>
+                <div style="font-size: 11px; margin-bottom: 2px;">{{ $configs['firma_oc_nombre_2'] ?? '' }}</div>
+                <strong>{{ $configs['firma_oc_puesto_2'] ?? 'Gerente Administrativo' }}</strong>
             </div>
             <div class="firma-box">
                 <span class="linea-firma"></span>
-                <strong>Alcalde Municipal</strong>
+                <div style="font-size: 11px; margin-bottom: 2px;">{{ $configs['firma_oc_nombre_3'] ?? '' }}</div>
+                <strong>{{ $configs['firma_oc_puesto_3'] ?? 'Alcalde Municipal' }}</strong>
             </div>
         </div>
 
@@ -344,6 +353,26 @@
                         <td class="col-valor">{{ number_format($item->valor, 2) }}</td>
                     </tr>
                 @endforeach
+
+                {{-- RELLENO DE FILAS VACÍAS (Mínimo 15) --}}
+                @php
+                    $itemsCount = count($orden->items);
+                    $minRows = 15;
+                    $fillRows = $minRows - $itemsCount;
+                @endphp
+
+                @if ($fillRows > 0)
+                    @for ($j = 0; $j < $fillRows; $j++)
+                        <tr>
+                            <td class="col-no" style="color:white;">.</td>
+                            <td class="col-desc"></td>
+                            <td class="col-unidad"></td>
+                            <td class="col-cant"></td>
+                            <td class="col-precio"></td>
+                            <td class="col-valor"></td>
+                        </tr>
+                    @endfor
+                @endif
             </tbody>
         </table>
 

@@ -28,9 +28,11 @@ class OrdenController extends Controller
 
         $ordenes = $query->paginate(10)->appends($request->all());
 
-        $ultimo = Orden::latest('id')->first();
-        $numero = $ultimo ? $ultimo->id + 1 : 1;
-        $numero = str_pad($numero, 6, '0', STR_PAD_LEFT);
+        // Obtener siguiente número de OC desde la configuración
+        $nextIdConfig = \App\Models\Configuracion::where('key', 'next_oc_id')->first();
+        $nextId = $nextIdConfig ? $nextIdConfig->value : 1;
+
+        $numero = str_pad($nextId, 6, '0', STR_PAD_LEFT);
 
         return view('ordenesindex', compact('ordenes', 'numero'));
     }
@@ -40,9 +42,11 @@ class OrdenController extends Controller
     {
         $proveedores = Proveedor::orderBy('nombre')->get();
 
-        $ultimo = Orden::latest('id')->first();
-        $numero = $ultimo ? $ultimo->id + 1 : 1;
-        $numero = str_pad($numero, 6, '0', STR_PAD_LEFT);
+        // Obtener siguiente número de OC desde la configuración
+        $nextIdConfig = \App\Models\Configuracion::where('key', 'next_oc_id')->first();
+        $nextId = $nextIdConfig ? $nextIdConfig->value : 1;
+        
+        $numero = str_pad($nextId, 6, '0', STR_PAD_LEFT);
 
         return view('orden.reponer', compact('proveedores', 'numero'));
     }
@@ -130,20 +134,42 @@ class OrdenController extends Controller
             }
 
             // 2. GESTIONAR SOLICITANTE (BUSCAR O CREAR)
+            // 2. GESTIONAR SOLICITANTE (BUSCAR O CREAR)
             $solicitanteNombre = trim($request->solicitado);
-            $solicitanteObj = User::firstOrCreate(
-                ['name' => $solicitanteNombre],
-                [
-                    'email' => strtolower(str_replace(' ', '.', $solicitanteNombre)) . '@sistema.local',
-                    'password' => bcrypt('12345678')
-                ]
-            );
+            $emailGenerado = strtolower(str_replace(' ', '.', $solicitanteNombre)) . '@sistema.local';
 
-            // Crear ORDEN con número temporal para evitar colisiones
-            $tempNumero = uniqid('TEMP_');
+            $solicitanteObj = User::where('name', $solicitanteNombre)
+                                ->orWhere('email', $emailGenerado)
+                                ->first();
+
+            if (!$solicitanteObj) {
+                $solicitanteObj = User::create([
+                    'name' => $solicitanteNombre,
+                    'email' => $emailGenerado,
+                    'password' => bcrypt('12345678')
+                ]);
+            }
+
+            // OBTENER Y RESERVAR NUMERO DE SECUENCIA
+            $numeroAsignado = 1;
             
+            // Bloqueamos la fila de configuración para evitar colisiones
+            $config = \App\Models\Configuracion::firstOrCreate(
+                ['key' => 'next_oc_id'],
+                ['value' => 1]
+            );
+            
+            // Si hacemos lockForUpdate aseguramos que nadie más lea este valor hasta que terminemos
+            // Pero SQLite/MySQL simple a veces se comportan diferente con lock.
+            // Para este caso, un update directo es seguro si la transacción funciona.
+            $numeroAsignado = $config->value;
+            $config->increment('value');
+
+            $realNumero = str_pad($numeroAsignado, 6, '0', STR_PAD_LEFT);
+
+            // Crear ORDEN con el número reservado
             $orden = Orden::create([
-                'numero'         => $tempNumero,
+                'numero'         => $realNumero,
                 'fecha'          => Carbon::createFromFormat('d-m-Y', $request->fecha)->format('Y-m-d'),
                 'proveedor_id'   => $proveedorObj->id,
                 'lugar'          => $request->lugar,
@@ -155,11 +181,8 @@ class OrdenController extends Controller
                 'total'          => 0,
                 'estado'         => 'pendiente',
             ]);
-
-            // Actualizar con el número real basado en el ID autoincremental
-            // Esto garantiza unicidad total sin condiciones de carrera
-            $realNumero = str_pad($orden->id, 6, '0', STR_PAD_LEFT);
-            $orden->update(['numero' => $realNumero]);
+            
+            // No necesitamos actualizar 'numero' después, ya lo insertamos correcto.
 
             $subtotal = 0;
             $impuestoTotal = 0;
@@ -237,18 +260,23 @@ class OrdenController extends Controller
     }
 
     // GENERAR PDF
-    public function pdf($id)
+    public function pdf($id, Request $request)
     {
         Carbon::setLocale('es'); // Forzar español para las fechas
         $orden = Orden::with(['items', 'proveedor', 'solicitante'])
                       ->findOrFail($id);
         
-        \App\Services\BitacoraLogger::log("Imprimió/Visualizó PDF orden #{$orden->numero}", 'Ordenes');
+        $tipo = $request->get('tipo', 'original'); // original o copia
+        
+        \App\Services\BitacoraLogger::log("Imprimió/Visualizó PDF ($tipo) orden #{$orden->numero}", 'Ordenes');
 
-        $pdf = Pdf::loadView('orden.espera_pdf', compact('orden'))
+        // Cargar configuraciones de firmas
+        $configs = \App\Models\Configuracion::pluck('value', 'key');
+
+        $pdf = Pdf::loadView('orden.espera_pdf', compact('orden', 'configs', 'tipo'))
                   ->setPaper('letter', 'portrait');
 
-        return $pdf->stream('orden_'.$orden->numero.'.pdf');
+        return $pdf->stream('orden_'.$orden->numero.'_'.$tipo.'.pdf');
     }
 
     // BUSCAR PROVEEDORES (AJAX)

@@ -94,8 +94,7 @@
                 <a href="{{ route('backup.index') }}" class="card card-dashboard border-0 shadow-sm text-center p-4">
                     <div class="card-body">
                         <div class="icon-large text-secondary">⚙️</div>
-                        <h4 class="card-title fw-bold">Configuración</h4>
-                        <p class="card-text text-muted">Respaldos y Restauración</p>
+                        <p class="card-title fw-bold">Respaldos y Restauración</p>
                     </div>
                 </a>
             </div>

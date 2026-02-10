@@ -420,7 +420,7 @@
                     </a>
                     --}}
 
-                    <a href="{{ route('orden.reponer') }}" class="btn-as-panel" target="_blank">
+                    <a href="#" class="btn-as-panel" target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#10b981,#34d399)">♻️</span>
                         Reponer
                     </a>
