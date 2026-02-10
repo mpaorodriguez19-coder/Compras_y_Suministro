@@ -95,13 +95,20 @@ class UserController extends Controller
         }
 
         try {
-            // Buscar con guiones y sin guiones para flexibilidad
-            $dniLimpio = str_replace('-', '', $identidad);
-            $dniGuiones = substr($dniLimpio, 0, 4) . '-' . substr($dniLimpio, 4, 4) . '-' . substr($dniLimpio, 8);
+            // Limpieza robusta: Solo números
+            $dniLimpio = preg_replace('/[^0-9]/', '', $identidad);
+            
+            // Construir formatos posibles
+            // 1. Formato estándar con guiones: 0801-1990-12345 (Si tiene longitud suficiente)
+            $dniGuiones = $identidad; // Default al original
+            if (strlen($dniLimpio) >= 9) {
+                $dniGuiones = substr($dniLimpio, 0, 4) . '-' . substr($dniLimpio, 4, 4) . '-' . substr($dniLimpio, 8);
+            }
 
+            // Buscar coincidencias
             $empleado = \App\Models\EmpleadoRRHH::where('DNI', $identidad)
-                ->orWhere('DNI', $dniLimpio)
-                ->orWhere('DNI', $dniGuiones)
+                ->orWhere('DNI', $dniLimpio) // Sin guiones (fuerza bruta numérica)
+                ->orWhere('DNI', $dniGuiones) // Con formato estándar
                 ->first();
 
             if ($empleado) {
