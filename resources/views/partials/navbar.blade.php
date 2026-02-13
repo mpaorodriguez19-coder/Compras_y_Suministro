@@ -72,8 +72,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Tiempo de inactividad en milisegundos (10 minutos = 600,000 ms)
-    const INACTIVITY_LIMIT = 600000;
+    // Tiempo de inactividad en milisegundos (60 minutos = 3,600,000 ms)
+    const INACTIVITY_LIMIT = 3600000;
     let inactivityTimer;
 
     function resetTimer() {

@@ -494,4 +494,10 @@ class OrdenController extends Controller
         
         return back()->with('success', "Orden #{$orden->numero} anulada correctamente.");
     }
+    // VERIFICAR SI ORDEN EXISTE (API)
+    public function checkOrden($numero)
+    {
+        $exists = Orden::where('numero', $numero)->exists();
+        return response()->json(['exists' => $exists]);
+    }
 }

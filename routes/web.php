@@ -78,6 +78,7 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
     });
 
     /* API AUTOCOMPLETADO */
+    Route::get('/api/check-orden/{numero}', [OrdenController::class, 'checkOrden'])->name('api.checkOrden');
     Route::get('/api/buscar-proveedores', [OrdenController::class, 'buscarProveedores'])->name('api.proveedores');
     Route::get('/api/buscar-usuarios', [OrdenController::class, 'buscarUsuarios'])->name('api.usuarios');
     Route::get('/api/rrhh/empleado', [UserController::class, 'buscarEmpleadoRRHH'])->name('api.rrhh.empleado');

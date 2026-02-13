@@ -420,7 +420,7 @@
                     </a>
                     --}}
 
-                  {{--
+                    {{--
                   <a href="#" class="btn-as-panel" target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#10b981,#34d399)">♻️</span>
                         Reponer
@@ -771,7 +771,20 @@
         document.getElementById('btnBuscarOrden').addEventListener('click', function() {
             var num = document.getElementById('numeroBuscar').value;
             if (num.trim() !== '') {
-                window.open("{{ url('/orden/espera') }}/" + num, '_blank');
+                // Verificar si existe antes de abrir
+                fetch(`{{ url('/api/check-orden') }}/${num}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            window.open("{{ url('/orden/espera') }}/" + num, '_blank');
+                        } else {
+                            alert('⚠️ La orden #' + num + ' no ha sido creada o no existe.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al verificar la orden.');
+                    });
             } else {
                 alert('Por favor ingrese un número de orden.');
             }
