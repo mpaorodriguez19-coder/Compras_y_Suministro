@@ -7,7 +7,7 @@
     <style>
         @page {
             size: letter portrait;
-            margin: 240px 60px 220px 60px;
+            margin: 240px 60px 240px 60px;
             /* Margenes Aumentados Superior */
         }
 
@@ -36,7 +36,7 @@
             bottom: -180px;
             left: 0;
             right: 0;
-            height: 140px;
+            height: 200px;
         }
 
         /* TABLA DE ITEMS */
@@ -141,70 +141,96 @@
 
         /* INFO SUPERIOR */
         .datos-superiores {
-            margin-top: 10px;
+            margin-top: 20px;
             width: 100%;
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
+            text-align: left;
         }
 
         .dato-row {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+             display: flex;
         }
 
-        .label {
-            display: inline-block;
+          .dato-label {
             width: 80px;
+            text-transform: uppercase;
         }
 
-        /* TOTALES */
-        .bloque-totales {
-            width: 100%;
-            border: 1px solid black;
-            border-top: none;
-            margin-bottom: 10px;
-            page-break-inside: avoid;
-            /* Evitar que se parta a mitad */
+        .dato-val {
+            flex: 1;
+            text-transform: uppercase;
         }
 
-        .fila-total {
-            display: table;
-            /* Simular tabla para alinacion */
-            width: 100%;
+        .saludo {
+            margin: 15px 0 5px 0;
+            font-family: Arial, sans-serif;
         }
 
-        .celda-izq {
-            display: table-cell;
-            width: 70%;
-            padding: 5px;
-            border-right: 1px solid black;
-            font-size: 10px;
-            vertical-align: top;
-        }
+        /* ===== TOTALES CORREGIDOS PARA PDF ===== */
 
-        .celda-der {
-            display: table-cell;
-            width: 30%;
-            vertical-align: top;
-            padding: 0;
-        }
+.bloque-totales {
+    display: table;
+    width: 100%;
+    border: 1px solid black;
+    border-top: none;
+    font-family: Arial, sans-serif;
+    page-break-inside: avoid;
+}
 
-        .total-item {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid black;
-            padding: 3px 5px;
-            font-size: 11px;
-        }
+/* FILA GENERAL */
+.fila-total {
+    display: table-row;
+}
 
-        .total-item:last-child {
-            border-bottom: none;
-        }
+/* LADO IZQUIERDO */
+.bloque-info {
+    display: table-cell;
+    width: 70%;
+    padding: 6px;
+    font-size: 10px;
+    border-right: 1px solid black;
+    vertical-align: top;
+}
 
-        .total-final {
-            background: #f0f0f0;
-            font-weight: bold;
-        }
+/* LADO DERECHO */
+.bloque-cifras {
+    display: table-cell;
+    width: 30%;
+    vertical-align: top;
+}
+
+/* FILAS INTERNAS DE TOTALES */
+.row-total {
+    display: table;
+    width: 100%;
+    border-bottom: 1px solid black;
+    font-size: 11px;
+}
+
+.label-total {
+    display: table-cell;
+    width: 60%;
+    padding: 4px;
+}
+
+.monto-total {
+    display: table-cell;
+    width: 40%;
+    text-align: right;
+    padding: 4px;
+}
+
+.row-total:last-child {
+    border-bottom: none;
+}
+
+.total-final {
+    background: #f0f0f0;
+    font-weight: bold;
+}
 
         /* FOOTER / FIRMAS */
         .firmas-container {
@@ -233,6 +259,66 @@
             margin-bottom: 10px;
             line-height: 1.1;
         }
+        
+
+        .footer-section {
+    display: table;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.footer-left {
+    display: table-cell;
+    width: 55%;
+    vertical-align: top;
+    font-size: 10px;
+}
+
+.footer-right {
+    display: table-cell;
+    width: 45%;
+    vertical-align: top;
+    text-align: center;
+}
+
+/* Texto legal */
+.texto-legal {
+    font-size: 9px;
+    text-align: justify;
+    line-height: 1.2;
+    margin-top: 5px;
+}
+
+/* Copia y hecho por */
+.copia-hecho {
+    margin-top: 25px;
+    font-size: 9px;
+}
+
+/* Firma superior */
+.firma-top {
+    margin-bottom: 40px;
+}
+
+/* Contenedor firmas inferiores */
+.firmas-bottom {
+    display: table;
+    width: 100%;
+}
+
+.firma-col {
+    display: table-cell;
+    width: 50%;
+    text-align: center;
+}
+
+/* Línea firma ajustada */
+.linea-firma {
+    border-top: 1px solid black;
+    width: 80%;
+    margin: 0 auto 5px auto;
+    display: block;
+}
     </style>
 </head>
 
@@ -292,42 +378,71 @@
             </div>
         </div>
 
-        <div style="font-size: 11px; margin-top: 5px; font-style: italic; text-align: left;">
-            Estimados señores: Agradecemos entregar los materiales o prestar los servicios indicados en el siguiente
-            cuadro.
+        <div class="saludo"style="font-size: 12px; margin-top: 5px; font-style: italic; text-align: left;">
+            Estimados señores:<br>
+            Agradecemos entregar los materiales o prestar los servicios indicados en el siguiente cuadro.
         </div>
+
+        
+
     </header>
 
-    <footer>
-        <div class="legal-text">
-            <strong>SUMINISTRANTE:</strong> Para cancelar su cuenta envíe esta orden con Factura en triplicado firmado
-            con la siguiente certificación.
-            Certifico(amos) que esta cuenta es justa y correcta y que no ha sido pagada. La falta de cualquiera de estos
-            requisitos atrasará la cancelacion de la cuenta.
+   <footer>
+    <div class="footer-section">
+
+        <!-- IZQUIERDA -->
+        <div class="footer-left">
+            <strong>SUMINISTRANTE:</strong>
+
+            <p class="texto-legal">
+                Para cancelar su cuenta envíe esta orden con Factura en triplicado firmado con la siguiente certificación.
+                Certifico(amos) que esta cuenta es justa y correcta y que no ha sido pagada.
+                La falta de cualquiera de estos requisitos atrasará la cancelacion de la cuenta.
+            </p>
+
+            <div class="copia-hecho">
+                Hecho Por: {{ auth()->user()->name ?? 'SISTEMA' }}
+            </div>
         </div>
 
-        <div class="firmas-container">
-            <div class="firma-box">
+        <!-- DERECHA -->
+        <div class="footer-right">
+
+            <!-- Firma arriba -->
+            <div class="firma-top">
                 <span class="linea-firma"></span>
-                <div style="font-size: 11px; margin-bottom: 2px;">{{ $configs['firma_oc_nombre_1'] ?? '' }}</div>
+                <div style="font-size: 11px;">
+                    {{ $configs['firma_oc_nombre_1'] ?? '' }}
+                </div>
                 <strong>{{ $configs['firma_oc_puesto_1'] ?? 'Jefe de Compras' }}</strong>
             </div>
-            <div class="firma-box">
-                <span class="linea-firma"></span>
-                <div style="font-size: 11px; margin-bottom: 2px;">{{ $configs['firma_oc_nombre_2'] ?? '' }}</div>
-                <strong>{{ $configs['firma_oc_puesto_2'] ?? 'Gerente Administrativo' }}</strong>
+
+            <!-- Firmas abajo -->
+            <div class="firmas-bottom">
+
+                <div class="firma-col">
+                    <span class="linea-firma"></span>
+                    <div style="font-size: 11px;">
+                        {{ $configs['firma_oc_nombre_2'] ?? '' }}
+                    </div>
+                    <strong>{{ $configs['firma_oc_puesto_2'] ?? 'Gerente Administrativo' }}</strong>
+                </div>
+
+                <div class="firma-col">
+                    <span class="linea-firma"></span>
+                    <div style="font-size: 11px;">
+                        {{ $configs['firma_oc_nombre_3'] ?? '' }}
+                    </div>
+                    <strong>{{ $configs['firma_oc_puesto_3'] ?? 'Alcalde Municipal' }}</strong>
+                </div>
+
             </div>
-            <div class="firma-box">
-                <span class="linea-firma"></span>
-                <div style="font-size: 11px; margin-bottom: 2px;">{{ $configs['firma_oc_nombre_3'] ?? '' }}</div>
-                <strong>{{ $configs['firma_oc_puesto_3'] ?? 'Alcalde Municipal' }}</strong>
-            </div>
+
         </div>
 
-        <div style="font-size: 9px; margin-top: 5px; text-align: left;">
-            Hecho Por: {{ auth()->user()->name ?? 'SISTEMA' }}
-        </div>
-    </footer>
+    </div>
+</footer>
+
 
     <!-- CONTENIDO (TABLA) -->
     <main>
@@ -376,34 +491,50 @@
             </tbody>
         </table>
 
-        <!-- TOTALES (Al final de la tabla) -->
-        <div class="bloque-totales">
-            <div class="fila-total">
-                <div class="celda-izq">
-                    <strong>CONCEPTO / USO:</strong><br>
-                    {{ $orden->concepto ? strtoupper($orden->concepto) : '---' }}
-                    <br><br>
-                    <strong>Solicitado por:</strong> {{ optional($orden->solicitante)->name }}
-                </div>
-                <div class="celda-der">
-                    <div class="total-item">
-                        <span>Sub - Total L.</span>
-                        <span>{{ number_format($orden->subtotal, 2) }}</span>
-                    </div>
-                    <div class="total-item">
-                        <span>Descuento</span>
-                        <span>{{ number_format($orden->descuento, 2) }}</span>
-                    </div>
-                    <div class="total-item">
-                        <span>Impuesto</span>
-                        <span>{{ number_format($orden->impuesto, 2) }}</span>
-                    </div>
-                    <div class="total-item total-final">
-                        <span>Total Pago</span>
-                        <span>{{ number_format($orden->total, 2) }}</span>
-                    </div>
-                </div>
+     <!-- BLOQUE TOTALES E INFOS -->
+<div class="bloque-totales">
+    <div class="fila-total">
+
+        <!-- LADO IZQUIERDO -->
+        <div class="bloque-info">
+            <div style="margin-bottom: 5px;">
+              <strong style="font-size: 10px;">
+                        {{ $orden->concepto ? strtoupper($orden->concepto) : 'UTILIZADOS POR EMPLEADOS DEL PLANTEL EN RECOLECCION DE DESECHOS SOLIDOS EN TODA LA CIUDAD,CM-AMD-CS-1083-2025,01-00-000-005-000-36400-15-013-01,EXP-43510' }}
+                    </strong>
             </div>
+            <div>
+                <strong>Solicitado por:</strong>
+                {{ optional($orden->solicitante)->name }}
+            </div>
+        </div>
+
+        <!-- LADO DERECHO -->
+        <div class="bloque-cifras">
+
+            <div class="row-total">
+                <div class="label-total">Sub - Total L.</div>
+                <div class="monto-total">{{ number_format($orden->subtotal, 2) }}</div>
+            </div>
+
+            <div class="row-total">
+                <div class="label-total">Descuento:</div>
+                <div class="monto-total">{{ number_format($orden->descuento, 2) }}</div>
+            </div>
+
+            <div class="row-total">
+                <div class="label-total">Impuesto:</div>
+                <div class="monto-total">{{ number_format($orden->impuesto, 2) }}</div>
+            </div>
+
+            <div class="row-total total-final">
+                <div class="label-total">Total Pago:</div>
+                <div class="monto-total">{{ number_format($orden->total, 2) }}</div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
         </div>
     </main>
 

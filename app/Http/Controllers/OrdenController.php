@@ -237,7 +237,7 @@ class OrdenController extends Controller
             DB::commit();
 
             // REDIRIGIR CON EL ID CORRECTO
-            return redirect()->route('orden.espera', ['id' => $orden->id]);
+            return redirect()->route('orden.pdf', ['id' => $orden->id]);
 
         } catch (\Exception $e) {
             DB::rollBack();

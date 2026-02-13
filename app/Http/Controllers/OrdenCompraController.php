@@ -49,7 +49,7 @@ class OrdenCompraController extends Controller
         }
 
         // 3️⃣ REDIRECCIONAR A IMPRESION
-        return redirect()->route('orden.espera', $orden->id);
+        return redirect()->route('orden.pdf', $orden->id);
     }
 
 

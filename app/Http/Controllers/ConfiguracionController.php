@@ -73,17 +73,20 @@ class ConfiguracionController extends Controller
                     ['value' => $newVal]
                 );
 
-                // Obtener nombre de usuario (Admin o User)
+                // Obtener nombre de usuario (Admin o User) y ID
                 $userName = 'Sistema';
+                $userId = null;
+
                 if (Auth::guard('admin')->check()) {
                     $userName = Auth::guard('admin')->user()->name . ' (Admin)';
                 } elseif (Auth::check()) {
                     $userName = Auth::user()->name;
+                    $userId = Auth::id();
                 }
 
                 // Registrar en historial
                 \App\Models\HistorialCambioSecuencia::create([
-                    'user_id'       => auth()->id(),
+                    'user_id'       => $userId,
                     'user_name'     => $userName,
                     'valor_anterior'=> $oldVal,
                     'valor_nuevo'   => $newVal,

@@ -207,7 +207,7 @@
     <div class="container main-card p-0 mt-5">
         <!-- Barra superior -->
         <div class="header-bar">
-            <h4 class="m-0">{{ isset($orden) ? 'Editar Orden' : 'Orden de Compra' }} #{{ $numero ?? '---' }}</h4>
+            <h4 class="m-0">{{ isset($orden) ? 'Editar Orden' : 'Orden de Compra' }}</h4>
         </div>
 
         <div class="row g-2 mb-0">
@@ -420,10 +420,12 @@
                     </a>
                     --}}
 
-                    <a href="#" class="btn-as-panel" target="_blank">
+                  {{--
+                  <a href="#" class="btn-as-panel" target="_blank">
                         <span class="icon" style="background: linear-gradient(90deg,#10b981,#34d399)">♻️</span>
                         Reponer
                     </a>
+                    --}}
 
                     <a href="{{ route('informe.detallado') }}" id="btnInformeDetallado"
                         class="btn-as-panel w-100 text-center" target="_blank">

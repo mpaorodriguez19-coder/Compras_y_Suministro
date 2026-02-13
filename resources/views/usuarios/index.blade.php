@@ -11,7 +11,7 @@
     @include('partials.navbar')
     <div class="container py-4 mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold">👥 Usuarios (Solicitantes)</h2>
+            <h2 class="fw-bold">👥 Usuarios </h2>
             <div>
                 {{-- <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary me-2">🏠 Inicio</a> --}}
                 <button class="btn btn-primary" onclick="abrirModal()">+ Nuevo Usuario</button>

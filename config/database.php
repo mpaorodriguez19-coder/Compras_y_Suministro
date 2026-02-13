@@ -63,20 +63,33 @@ return [
             ]) : [],
         ],
 
-        'recursos_humanos' => [
+        /*'recursos_humanos' => [
             'driver' => 'mysql',
-            'host' => env('DB_RRHH_HOST', '127.0.0.1'),
-            'port' => env('DB_RRHH_PORT', '3308'),
-            'database' => env('DB_RRHH_DATABASE', 'recursos_humanos'),
-            'username' => env('DB_RRHH_USERNAME', 'root'),
-            'password' => env('DB_RRHH_PASSWORD', ''),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'recursos_humanos'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
             'charset' => 'latin1',
             'collation' => 'latin1_swedish_ci',
             'prefix' => '',
             'strict' => true,
             'engine' => null,
-        ],
+        ],*/
 
+        'recursos_humanos' => [
+    'driver' => 'mysql',
+    'host' => env('DB_RRHH_HOST', '127.0.0.1'),
+    'port' => env('DB_RRHH_PORT', '3306'),
+    'database' => env('DB_RRHH_DATABASE', 'recursos_humanos'),
+    'username' => env('DB_RRHH_USERNAME', 'root'),
+    'password' => env('DB_RRHH_PASSWORD', ''),
+    'charset' => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+    'prefix' => '',
+    'strict' => true,
+
+ ],
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
@@ -85,6 +98,21 @@ return [
             'database' => env('DB_DATABASE', 'forge'),
             'username' => env('DB_USERNAME', 'forge'),
             'password' => env('DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
+         'pgsql_db_RH' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_SECOND', '127.0.0.1'),
+            'port' => env('DB_PORT_SECOND', '5432'),
+            'database' => env('DB_DATABASE_SECOND', 'general'),
+            'username' => env('DB_USERNAME_SECOND', 'administrador'),
+            'password' => env('DB_PASSWORD_SECOND', 'admin'),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,

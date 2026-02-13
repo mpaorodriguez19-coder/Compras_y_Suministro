@@ -104,6 +104,17 @@
                                         <h6 class="text-muted">Historial de Cambios de Secuencia</h6>
                                         <div class="table-responsive">
                                             <table class="table table-sm table-bordered">
+                                              <style>
+.input-group.input-group-outline .form-control {
+    padding-top: 1.25rem !important;
+}
+.input-group.input-group-outline .form-label {
+    top: -0.65rem !important;
+    font-size: 1.00rem !important;
+    background: #fff;
+    padding: 0 10px;
+}
+</style>  
                                                 <thead>
                                                     <tr>
                                                         <th>Fecha</th>
