@@ -23,7 +23,10 @@ class CheckSessionTimeout
             return $next($request);
         }
 
-        $maxIdleTime = 600; // 10 minutos en segundos
+        // Usar el tiempo de vida de la sesión configurado (en minutos) convertido a segundos
+        // Por defecto en Laravel es 120 minutos (2 horas)
+        $maxIdleTime = config('session.lifetime') * 60; 
+
         $lastActivity = Session::get('last_activity');
 
         if ($lastActivity && (time() - $lastActivity > $maxIdleTime)) {
@@ -31,7 +34,7 @@ class CheckSessionTimeout
             Session::invalidate();
             Session::regenerateToken();
 
-            return redirect()->route('login')->with('error', 'Su sesión ha expirado por inactividad (10 minutos). Por favor ingrese nuevamente.');
+            return redirect()->route('login')->with('error', 'Su sesión ha expirado por inactividad. Por favor ingrese nuevamente.');
         }
 
         // Actualizar tiempo de última actividad

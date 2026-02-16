@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ordenes', function (Blueprint $table) {
-    $table->text('concepto')->nullable();
-});
+            $table->text('concepto')->nullable()->change();
+        });
     }
 
     /**
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ordenes', function (Blueprint $table) {
-            //
+            $table->string('concepto', 255)->nullable()->change();
         });
     }
 };

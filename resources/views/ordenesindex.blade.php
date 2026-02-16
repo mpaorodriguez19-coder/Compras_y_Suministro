@@ -420,12 +420,41 @@
                     </a>
                     --}}
 
-                    {{--
-                  <a href="#" class="btn-as-panel" target="_blank">
+
+                    <a href="#" id="btnReponer" class="btn-as-panel">
                         <span class="icon" style="background: linear-gradient(90deg,#10b981,#34d399)">♻️</span>
                         Reponer
                     </a>
-                    --}}
+
+                    <script>
+                        document.getElementById('btnReponer').addEventListener('click', function(e) {
+                            e.preventDefault();
+
+                            var numero = document.getElementById('numeroBuscar').value;
+
+                            if (!numero) {
+                                alert('Por favor, ingrese un número de orden para reponer.');
+                                return;
+                            }
+
+                            // Realizar petición AJAX para verificar si existe
+                            fetch(`{{ route('api.checkOrden', ['numero' => ':NUM']) }}`.replace(':NUM', numero))
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.exists) {
+                                        // Si existe, redirigir con el parámetro
+                                        window.open(`{{ route('orden.reponer') }}?copiar_numero=${numero}`, '_blank');
+                                    } else {
+                                        alert('La orden número ' + numero + ' no existe.');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert('Hubo un error al verificar la orden.');
+                                });
+                        });
+                    </script>
+
 
                     <a href="{{ route('informe.detallado') }}" id="btnInformeDetallado"
                         class="btn-as-panel w-100 text-center" target="_blank">

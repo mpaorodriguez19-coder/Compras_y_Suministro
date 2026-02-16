@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\LoginController;
 /* ==============================================
    AUTENTICACIÓN (LOGIN)
 ============================================== */
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/setup/first-admin', [LoginController::class, 'setupFirstAdmin'])->name('setup.firstAdmin');
@@ -35,9 +36,9 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
     })->name('dashboard');
 
     /* GESTIÓN DE ÓRDENES (LEGACY & NEW) */
-    Route::get('/orden/reponer', [OrdenController::class, 'reponer'])->name('orden.reponer'); 
+    Route::get('/orden/reponer', [OrdenController::class, 'reponer'])->name('orden.reponer');
     Route::get('/ordenes/crear', [OrdenController::class, 'index'])->name('ordenes.index');
-    
+
     // NUEVAS RUTAS DE GESTIÓN
     Route::get('/ordenes/lista', [OrdenController::class, 'lista'])->name('ordenes.lista');
     Route::get('/ordenes/{id}/editar', [OrdenController::class, 'edit'])->name('ordenes.edit');
@@ -58,7 +59,7 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
         Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
         Route::post('/usuarios', [UserController::class, 'store'])->name('usuarios.store');
         Route::put('/usuarios/{id}', [UserController::class, 'update'])->name('usuarios.update');
-        
+
         // GESTION DE ADMINISTRADORES
         Route::get('/admins', [App\Http\Controllers\AdminController::class, 'index'])->name('admins.index');
         Route::post('/admins', [App\Http\Controllers\AdminController::class, 'store'])->name('admins.store');
@@ -86,15 +87,15 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
     /* PANELES Y REPORTES */
     Route::get('/informe-detallado', [PanelController::class, 'informeDetallado'])->name('informe.detallado');
     Route::get('/panel/informe-detallado', [PanelController::class, 'informeDetallado']);
-    
+
     Route::get('/compras-proveedor', [PanelController::class, 'comprasProveedor'])->name('compras.proveedor');
     Route::get('/panel/compras-proveedor', [PanelController::class, 'comprasProveedor']);
-    
+
     Route::get('/resumen-proveedor', [PanelController::class, 'resumenProveedor'])->name('resumen.proveedor');
     Route::get('/panel/resumen-proveedor', [PanelController::class, 'resumenProveedor']);
-    
+
     Route::get('/informe', [PanelController::class, 'informe'])->name('informe');
-    
+
     Route::get('/transparencia', [PanelController::class, 'transparencia'])->name('transparencia');
     Route::get('/panel/transparencia', [PanelController::class, 'transparencia']);
 
@@ -109,4 +110,8 @@ Route::middleware(['auth:admin,web', 'check.session'])->group(function () {
         }
     });
 
+    /* KEEPALIVE SESSION */
+    Route::get('/api/check-session-activity', function () {
+        return response()->json(['status' => 'active']);
+    })->name('api.checkSessionActivity');
 });

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class OrdenController extends Controller
 {
@@ -38,7 +39,7 @@ class OrdenController extends Controller
     }
 
     // FORMULARIO REPONER NUEVA ORDEN
-    public function reponer()
+    public function reponer(Request $request)
     {
         $proveedores = Proveedor::orderBy('nombre')->get();
 
@@ -48,7 +49,14 @@ class OrdenController extends Controller
         
         $numero = str_pad($nextId, 6, '0', STR_PAD_LEFT);
 
-        return view('orden.reponer', compact('proveedores', 'numero'));
+        $ordenOrigen = null;
+        if ($request->has('copiar_numero')) {
+            $ordenOrigen = Orden::with(['items', 'proveedor', 'solicitante'])
+                                ->where('numero', $request->copiar_numero)
+                                ->first();
+        }
+
+        return view('orden.reponer', compact('proveedores', 'numero', 'ordenOrigen'));
     }
 
     // GUARDAR ORDEN + DETALLES
@@ -134,20 +142,27 @@ class OrdenController extends Controller
             }
 
             // 2. GESTIONAR SOLICITANTE (BUSCAR O CREAR)
-            // 2. GESTIONAR SOLICITANTE (BUSCAR O CREAR)
-            $solicitanteNombre = trim($request->solicitado);
-            $emailGenerado = strtolower(str_replace(' ', '.', $solicitanteNombre)) . '@sistema.local';
+            $solicitanteObj = null;
 
-            $solicitanteObj = User::where('name', $solicitanteNombre)
-                                ->orWhere('email', $emailGenerado)
-                                ->first();
+            if (Auth::guard('web')->check()) {
+                // Si es un usuario normal logueado, ÉL es el solicitante
+                $solicitanteObj = Auth::guard('web')->user();
+            } else {
+                // Si es Admin, busca por nombre (o crea nuevo)
+                $solicitanteNombre = trim($request->solicitado);
+                $emailGenerado = strtolower(str_replace(' ', '.', $solicitanteNombre)) . '@sistema.local';
 
-            if (!$solicitanteObj) {
-                $solicitanteObj = User::create([
-                    'name' => $solicitanteNombre,
-                    'email' => $emailGenerado,
-                    'password' => bcrypt('12345678')
-                ]);
+                $solicitanteObj = User::where('name', $solicitanteNombre)
+                                    ->orWhere('email', $emailGenerado)
+                                    ->first();
+
+                if (!$solicitanteObj) {
+                    $solicitanteObj = User::create([
+                        'name' => $solicitanteNombre,
+                        'email' => $emailGenerado,
+                        'password' => bcrypt('12345678')
+                    ]);
+                }
             }
 
             // OBTENER Y RESERVAR NUMERO DE SECUENCIA
@@ -170,7 +185,7 @@ class OrdenController extends Controller
             // Crear ORDEN con el número reservado
             $orden = Orden::create([
                 'numero'         => $realNumero,
-                'fecha'          => Carbon::createFromFormat('d-m-Y', $request->fecha)->format('Y-m-d'),
+                'fecha'          => Carbon::parse($request->fecha)->format('Y-m-d'),
                 'proveedor_id'   => $proveedorObj->id,
                 'lugar'          => $request->lugar,
                 'solicitante_id' => $solicitanteObj->id,
@@ -217,7 +232,7 @@ class OrdenController extends Controller
             }
 
             if ($subtotal <= 0) {
-                throw new \Exception('Debe ingresar al menos un item válido.');
+                throw new \Exception('Debe ingresar al menos un artículo válido.');
             }
 
             // Descuento Global
@@ -404,7 +419,7 @@ class OrdenController extends Controller
 
             // 3. Actualizar Cabecera
              $orden->update([
-                'fecha'          => Carbon::createFromFormat('d-m-Y', $request->fecha)->format('Y-m-d'), // Asegurar formato Y-m-d
+                'fecha'          => Carbon::parse($request->fecha)->format('Y-m-d'), // Asegurar formato Y-m-d
                 'proveedor_id'   => $proveedorObj->id,
                 'lugar'          => $request->lugar,
                 'solicitante_id' => $solicitanteObj->id,

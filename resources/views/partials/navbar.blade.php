@@ -13,25 +13,28 @@
 
         <!-- Derecha: Dropdown Usuario -->
         <div class="dropdown">
+            @php
+                $currentUser = Auth::guard('admin')->user() ?? Auth::guard('web')->user();
+            @endphp
             <button class="btn btn-light border dropdown-toggle d-flex align-items-center gap-2" type="button"
                 data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="fw-bold text-dark small">{{ Auth::user()->name ?? 'Usuario invitado' }}</span>
+                <span class="fw-bold text-dark small">{{ $currentUser->name ?? 'Usuario invitado' }}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width: 200px;">
                 <li>
                     <h6 class="dropdown-header">
-                        {{ Auth::user()->email ?? '' }}
+                        {{ $currentUser->email ?? '' }}
                     </h6>
                 </li>
                 <li>
                     <div class="px-3 pb-2">
                         <span class="badge bg-info text-dark">
-                            @if (isset(Auth::user()->tipo) && Auth::user()->tipo == 'admin')
-                                Administrador
-                            @elseif(isset(Auth::user()->tipo) && Auth::user()->tipo == 'super_admin')
+                            @if (isset($currentUser->role) && $currentUser->role == 'super_admin')
                                 Super Admin
+                            @elseif(isset($currentUser->role) && $currentUser->role == 'admin')
+                                Administrador
                             @else
-                                {{ ucfirst(Auth::user()->tipo ?? 'Usuario') }}
+                                {{ ucfirst($currentUser->tipo ?? 'Usuario') }}
                             @endif
                         </span>
                     </div>
@@ -72,13 +75,32 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Tiempo de inactividad en milisegundos (60 minutos = 3,600,000 ms)
-    const INACTIVITY_LIMIT = 3600000;
+    // Tiempo de inactividad en milisegundos (120 minutos = 7,200,000 ms) - Coincide con SESSION_LIFETIME=.env
+    const INACTIVITY_LIMIT = 7200000;
     let inactivityTimer;
 
+    // Control de Ping (Keep-alive)
+    let lastPingTime = 0;
+    const PING_INTERVAL = 300000; // 5 minutos (300,000 ms)
+
     function resetTimer() {
+        // 1. Reiniciar contador local de logout
         clearTimeout(inactivityTimer);
         inactivityTimer = setTimeout(forceLogout, INACTIVITY_LIMIT);
+
+        // 2. Enviar Ping al servidor si ha pasado el intervalo (para mantener sesión PHP activa)
+        const now = Date.now();
+        if (now - lastPingTime > PING_INTERVAL) {
+            lastPingTime = now;
+            // Usamos fetch para golpear la ruta que renueva la sesión
+            fetch("{{ route('api.checkSessionActivity') }}", {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            }).catch(err => console.warn('Error manteniendo sesión activa:', err));
+        }
     }
 
     function forceLogout() {

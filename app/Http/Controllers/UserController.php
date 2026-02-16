@@ -42,7 +42,7 @@ class UserController extends Controller
             'nombres' => $request->nombres,
             'apellidos' => $request->apellidos,
             'email' => $request->email,
-            'password' => $request->password,
+            'password' => Hash::make($request->password),
             'dni' => $request->dni,
             'telefono' => $request->telefono,
             'direccion' => $request->direccion,
