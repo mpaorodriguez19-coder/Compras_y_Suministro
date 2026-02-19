@@ -7,7 +7,7 @@
     <style>
         @page {
             size: letter portrait;
-            margin: 240px 40px 200px 40px;
+            margin: 180px 40px 140px 40px;
             /* Margenes Aumentados Superior */
         }
 
@@ -20,10 +20,10 @@
 
         header {
             position: fixed;
-            top: -200px;
+            top: -150px;
             left: 0;
             right: 0;
-            height: 165px;
+            height: 140px;
             text-align: center;
         }
 
@@ -33,38 +33,39 @@
 
         /* TABLA DE ITEMS */
         table {
-               page-break-inside: auto;
+            page-break-inside: auto;
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
 
         tr {
-    page-break-inside: avoid;
-     page-break-after: auto;
-}
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
 
-    thead {
-        display: table-header-group;
-    }
+        thead {
+            display: table-header-group;
+        }
 
-    tfoot {
-        display: table-footer-group;
-    }
+        tfoot {
+            display: table-footer-group;
+        }
 
-    /* Forzar salto SOLO cuando sea necesario */
-    .page-break {
-        page-break-before: always;
-    }
+        /* Forzar salto SOLO cuando sea necesario */
+        .page-break {
+            page-break-before: always;
+        }
 
 
-    footer {
-        position: fixed;
-        bottom: -55px;
-        left: 0;
-        right: 0;
-        height: 80px;
-    }
+        footer {
+            position: fixed;
+            bottom: -55px;
+            left: 0;
+            right: 0;
+            height: 80px;
+        }
+
         th {
             border: 1px solid black;
             background: #e0e0e0;
@@ -117,45 +118,58 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 65px;
+            width: 100px;
         }
 
         .logo-der {
             position: absolute;
             right: 0;
             top: 0;
-            width: 65px;
+            width: 100px;
         }
 
         .titulo-muni {
-            font-size: 14px;
+            font-size: 26px;
             font-weight: bold;
+            font-style: italic;
             text-transform: uppercase;
-            font-family: Arial, sans-serif;
+            font-family: "Times New Roman", serif;
             margin-bottom: 2px;
         }
 
         .subtitulo-muni {
-            font-size: 12px;
+            font-size: 24px;
+            font-weight: bold;
             font-style: italic;
+            font-family: "Times New Roman", serif;
             margin: 0;
+            color: #444;
+            /* Gris oscuro */
         }
 
         .telefonos {
-            font-size: 10px;
+            font-size: 18px;
             margin-top: 2px;
         }
 
         .box-orden {
-            margin-top: 10px;
+            margin-top: 15px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            text-transform: uppercase;
+            text-align: center;
         }
 
-        .numero-rojo {
+        .numero-box {
+            display: inline-block;
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 2px 15px;
             color: #d00;
-            font-size: 14px;
-            margin-left: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 10px;
         }
 
         /* INFO SUPERIOR */
@@ -170,10 +184,10 @@
 
         .dato-row {
             margin-bottom: 8px;
-             display: flex;
+            display: flex;
         }
 
-          .dato-label {
+        .dato-label {
             width: 80px;
             text-transform: uppercase;
         }
@@ -190,66 +204,66 @@
 
         /* ===== TOTALES CORREGIDOS PARA PDF ===== */
 
-.bloque-totales {
-    display: table;
-    width: 100%;
-    border: 1px solid black;
-    font-family: Arial, sans-serif;
-    page-break-inside: avoid;
-     margin-top: 10px;
-}
+        .bloque-totales {
+            display: table;
+            width: 100%;
+            border: 1px solid black;
+            font-family: Arial, sans-serif;
+            page-break-inside: avoid;
+            margin-top: 10px;
+        }
 
-/* FILA GENERAL */
-.fila-total {
-    display: table-row;
-}
+        /* FILA GENERAL */
+        .fila-total {
+            display: table-row;
+        }
 
-/* LADO IZQUIERDO */
-.bloque-info {
-    display: table-cell;
-    width: 70%;
-    padding: 6px;
-    font-size: 10px;
-    border-right: 1px solid black;
-    vertical-align: top;
-}
+        /* LADO IZQUIERDO */
+        .bloque-info {
+            display: table-cell;
+            width: 70%;
+            padding: 6px;
+            font-size: 10px;
+            border-right: 1px solid black;
+            vertical-align: top;
+        }
 
-/* LADO DERECHO */
-.bloque-cifras {
-    display: table-cell;
-    width: 30%;
-    vertical-align: top;
-}
+        /* LADO DERECHO */
+        .bloque-cifras {
+            display: table-cell;
+            width: 30%;
+            vertical-align: top;
+        }
 
-/* FILAS INTERNAS DE TOTALES */
-.row-total {
-    display: table;
-    width: 100%;
-    border-bottom: 1px solid black;
-    font-size: 11px;
-}
+        /* FILAS INTERNAS DE TOTALES */
+        .row-total {
+            display: table;
+            width: 100%;
+            border-bottom: 1px solid black;
+            font-size: 11px;
+        }
 
-.label-total {
-    display: table-cell;
-    width: 60%;
-    padding: 4px;
-}
+        .label-total {
+            display: table-cell;
+            width: 60%;
+            padding: 4px;
+        }
 
-.monto-total {
-    display: table-cell;
-    width: 40%;
-    text-align: right;
-    padding: 4px;
-}
+        .monto-total {
+            display: table-cell;
+            width: 40%;
+            text-align: right;
+            padding: 4px;
+        }
 
-.row-total:last-child {
-    border-bottom: none;
-}
+        .row-total:last-child {
+            border-bottom: none;
+        }
 
-.total-final {
-    background: #f0f0f0;
-    font-weight: bold;
-}
+        .total-final {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
 
         /* FOOTER / FIRMAS */
         .firmas-container {
@@ -278,85 +292,73 @@
             margin-bottom: 10px;
             line-height: 1.1;
         }
-        
+
 
         .footer-section {
-    display: table;
-    width: 100%;
-    margin-top: 20px;
-}
+            display: table;
+            width: 100%;
+            margin-top: 20px;
+        }
 
-.footer-left {
-    display: table-cell;
-    width: 55%;
-    vertical-align: top;
-    font-size: 10px;
-}
+        .footer-left {
+            display: table-cell;
+            width: 55%;
+            vertical-align: top;
+            font-size: 10px;
+        }
 
-.footer-right {
-    display: table-cell;
-    width: 45%;
-    vertical-align: top;
-    text-align: center;
-}
+        .footer-right {
+            display: table-cell;
+            width: 45%;
+            vertical-align: top;
+            text-align: center;
+        }
 
-/* Texto legal */
-.texto-legal {
-    font-size: 9px;
-    text-align: justify;
-    line-height: 1.2;
-    margin-top: 5px;
-}
+        /* Texto legal */
+        .texto-legal {
+            font-size: 9px;
+            text-align: justify;
+            line-height: 1.2;
+            margin-top: 5px;
+        }
 
-/* Copia y hecho por */
-.copia-hecho {
-    margin-top: 25px;
-    font-size: 9px;
-}
+        /* Copia y hecho por */
+        .copia-hecho {
+            margin-top: 25px;
+            font-size: 9px;
+        }
 
-/* Firma superior */
-.firma-top {
-    margin-bottom: 40px;
-}
+        /* Firma superior */
+        .firma-top {
+            margin-bottom: 40px;
+        }
 
-/* Contenedor firmas inferiores */
-.firmas-bottom {
-    display: table;
-    width: 100%;
-}
+        /* Contenedor firmas inferiores */
+        .firmas-bottom {
+            display: table;
+            width: 100%;
+        }
 
-.firma-col {
-    display: table-cell;
-    width: 50%;
-    text-align: center;
-}
+        .firma-col {
+            display: table-cell;
+            width: 50%;
+            text-align: center;
+        }
 
-/* Línea firma ajustada */
-.linea-firma {
-    border-top: 1px solid black;
-    width: 80%;
-    margin: 0 auto 5px auto;
-    display: block;
-}
+        /* Línea firma ajustada */
+        .linea-firma {
+            border-top: 1px solid black;
+            width: 80%;
+            margin: 0 auto 5px auto;
+            display: block;
+        }
 
-<style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th, td {
-        padding: 10px;      /* 🔥 aumenta el espacio interno */
-        font-size: 12px;    /* puedes subirlo si quieres */
-    }
-
-th, td {
-    padding: 14px 10px; /* más espacio vertical */
-    font-size: 12px;
-}
-
-</style>
-
+        /* Ajustes finales */
+        th,
+        td {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
     </style>
 </head>
 
@@ -366,13 +368,13 @@ th, td {
     <header>
         <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('imagenes/logo_izq.png'))) }}"
             class="logo-izq">
-        <h1 class="titulo-muni">MUNICIPALIDAD DE DANLI, EL PARAISO</h1>
+        <h1 class="titulo-muni">MUNICIPALIDAD DE DANLI</h1>
         <p class="subtitulo-muni">Departamento de El Paraiso, Honduras, C.A.</p>
         <p class="telefonos">Teléfono: 2763-2080/2763-2405 Telefax: 2763-2638</p>
 
-        <div class="box-orden">
-            ORDEN DE COMPRA <span class="numero-rojo">{{ $orden->numero }}</span>
-            <div style="font-size:10px; color: #555; margin-top:2px;">
+        <div class="box-orden telefonos" >
+            ORDEN DE COMPRA No. <span class="numero-box">{{ $orden->numero }}</span>
+            <div style="font-size:10px; color: #555; margin-top:2px; font-weight:normal;">
                 {{ strtoupper($tipo ?? 'ORIGINAL') }}
             </div>
         </div>
@@ -381,6 +383,16 @@ th, td {
 
         <hr style="margin-top: 5px; margin-bottom: 5px;">
 
+
+
+
+
+    </header>
+
+
+
+    <!-- CONTENIDO (TABLA) -->
+    <main>
         <div class="datos-superiores">
             <div class="dato-row">
                 <span class="label">LUGAR:</span>
@@ -406,14 +418,6 @@ th, td {
             Agradecemos entregar los materiales o prestar los servicios indicados en el siguiente cuadro.
         </div>
 
-        
-
-    </header>
-
-   
-
-    <!-- CONTENIDO (TABLA) -->
-    <main>
         <table>
             <thead>
                 <tr>
@@ -426,10 +430,9 @@ th, td {
                 </tr>
             </thead>
             <tbody>
-@foreach ($orden->items as $i => $item)
-
-    @if($i > 0 && $i % 12 == 0)
-        </tbody>
+                @foreach ($orden->items as $i => $item)
+                    @if ($i > 0 && $i % 12 == 0)
+            </tbody>
         </table>
 
         <div style="page-break-after: always;"></div>
@@ -446,31 +449,30 @@ th, td {
                 </tr>
             </thead>
             <tbody>
-    @endif
+                @endif
 
-    <tr>
-        <td class="col-no">{{ $i + 1 }}</td>
-        <td class="col-desc">{{ $item->descripcion }}</td>
-        <td class="col-unidad">{{ $item->unidad }}</td>
-        <td class="col-cant">{{ number_format($item->cantidad, 2) }}</td>
-        <td class="col-precio">{{ number_format($item->precio_unitario, 2) }}</td>
-        <td class="col-valor">{{ number_format($item->valor, 2) }}</td>
-    </tr>
-
-@endforeach
+                <tr>
+                    <td class="col-no">{{ $i + 1 }}</td>
+                    <td class="col-desc">{{ $item->descripcion }}</td>
+                    <td class="col-unidad">{{ $item->unidad }}</td>
+                    <td class="col-cant">{{ number_format($item->cantidad, 2) }}</td>
+                    <td class="col-precio">{{ number_format($item->precio_unitario, 2) }}</td>
+                    <td class="col-valor">{{ number_format($item->valor, 2) }}</td>
+                </tr>
+                @endforeach
 
 
                 {{-- RELLENO DE FILAS VACÍAS (Mínimo 15) --}}
                 @php
                     $itemsCount = count($orden->items);
-                    $minRows = 15;
+                    $minRows = 12;
                     $fillRows = $minRows - $itemsCount;
                 @endphp
 
                 @if ($fillRows > 0)
                     @for ($j = 0; $j < $fillRows; $j++)
                         <tr>
-                            <td class="col-no" style="color:white;">.</td>
+                            <td class="col-no" style="color:#000;">{{ $itemsCount + $j + 1 }}</td>
                             <td class="col-desc"></td>
                             <td class="col-unidad"></td>
                             <td class="col-cant"></td>
@@ -482,109 +484,110 @@ th, td {
             </tbody>
         </table>
 
-     <!-- BLOQUE TOTALES E INFOS -->
-     <div class="bloque-totales">
-    <div class="fila-total">
+        <!-- BLOQUE TOTALES E INFOS -->
+        <div class="bloque-totales">
+            <div class="fila-total">
 
-        <!-- LADO IZQUIERDO -->
-        <div class="bloque-info">
-            <div style="margin-bottom: 5px;">
-              <strong style="font-size: 10px;">
-                        {{ $orden->concepto ? strtoupper($orden->concepto) : 'UTILIZADOS POR EMPLEADOS DEL PLANTEL EN RECOLECCION DE DESECHOS SOLIDOS EN TODA LA CIUDAD,CM-AMD-CS-1083-2025,01-00-000-005-000-36400-15-013-01,EXP-43510' }}
-                    </strong>
-            </div>
-            <div>
-                <strong>Solicitado por:</strong>
-                {{ optional($orden->solicitante)->name }}
-            </div>
-        </div>
-
-        <!-- LADO DERECHO -->
-        <div class="bloque-cifras">
-
-            <div class="row-total">
-                <div class="label-total">Sub - Total L.</div>
-                <div class="monto-total">{{ number_format($orden->subtotal, 2) }}</div>
-            </div>
-
-            <div class="row-total">
-                <div class="label-total">Descuento:</div>
-                <div class="monto-total">{{ number_format($orden->descuento, 2) }}</div>
-            </div>
-
-            <div class="row-total">
-                <div class="label-total">Impuesto:</div>
-                <div class="monto-total">{{ number_format($orden->impuesto, 2) }}</div>
-            </div>
-
-            <div class="row-total total-final">
-                <div class="label-total">Total Pago:</div>
-                <div class="monto-total">{{ number_format($orden->total, 2) }}</div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<footer>
-    <div class="footer-section">
-
-        <!-- FIRMAS EN UNA SOLA FILA -->
-        <div style="width:100%; margin-bottom:25px;">
-
-            <div style="display: table; width:100%;">
-                <div style="display: table-cell; width:33%; text-align:center;">
-                    <span class="linea-firma"></span>
-                    <div style="font-size:11px;">
-                        {{ $configs['firma_oc_nombre_1'] ?? '' }}
+                <!-- LADO IZQUIERDO -->
+                <div class="bloque-info">
+                    <div style="margin-bottom: 5px;">
+                        <strong style="font-size: 10px;">
+                            {{ $orden->concepto ? strtoupper($orden->concepto) : 'UTILIZADOS POR EMPLEADOS DEL PLANTEL EN RECOLECCION DE DESECHOS SOLIDOS EN TODA LA CIUDAD,CM-AMD-CS-1083-2025,01-00-000-005-000-36400-15-013-01,EXP-43510' }}
+                        </strong>
                     </div>
-                    <strong>{{ $configs['firma_oc_puesto_1'] ?? 'Jefe de Compras' }}</strong>
+                    <div>
+                        <strong>Solicitado por:</strong>
+                        {{ optional($orden->solicitante)->name }}
+                    </div>
                 </div>
 
-                <div style="display: table-cell; width:33%; text-align:center;">
-                    <span class="linea-firma"></span>
-                    <div style="font-size:11px;">
-                        {{ $configs['firma_oc_nombre_2'] ?? '' }}
-                    </div>
-                    <strong>{{ $configs['firma_oc_puesto_2'] ?? 'Gerente Administrativo' }}</strong>
-                </div>
+                <!-- LADO DERECHO -->
+                <div class="bloque-cifras">
 
-                <div style="display: table-cell; width:33%; text-align:center;">
-                    <span class="linea-firma"></span>
-                    <div style="font-size:11px;">
-                        {{ $configs['firma_oc_nombre_3'] ?? '' }}
+                    <div class="row-total">
+                        <div class="label-total">Sub - Total L.</div>
+                        <div class="monto-total">{{ number_format($orden->subtotal, 2) }}</div>
                     </div>
-                    <strong>{{ $configs['firma_oc_puesto_3'] ?? 'Alcalde Municipal' }}</strong>
+
+                    <div class="row-total">
+                        <div class="label-total">Descuento:</div>
+                        <div class="monto-total">{{ number_format($orden->descuento, 2) }}</div>
+                    </div>
+
+                    <div class="row-total">
+                        <div class="label-total">Impuesto:</div>
+                        <div class="monto-total">{{ number_format($orden->impuesto, 2) }}</div>
+                    </div>
+
+                    <div class="row-total total-final">
+                        <div class="label-total">Total Pago:</div>
+                        <div class="monto-total">{{ number_format($orden->total, 2) }}</div>
+                    </div>
+
                 </div>
             </div>
-
         </div>
 
-        <!-- SUMINISTRANTE ABAJO -->
-        <div style="margin-top:15px; font-size:10px;">
+        <footer>
+            <div class="footer-section">
 
-            <strong>SUMINISTRANTE:</strong>
+                <!-- FIRMAS EN UNA SOLA FILA -->
+                <div style="width:100%; margin-bottom:25px;">
 
-            <p class="texto-legal">
-                Para cancelar su cuenta envíe esta orden con Factura en triplicado firmado con la siguiente certificación.
-                Certifico(amos) que esta cuenta es justa y correcta y que no ha sido pagada.
-                La falta de cualquiera de estos requisitos atrasará la cancelación de la cuenta.
-            </p>
+                    <div style="display: table; width:100%;">
+                        <div style="display: table-cell; width:33%; text-align:center;">
+                            <span class="linea-firma"></span>
+                            <div style="font-size:11px;">
+                                {{ $configs['firma_oc_nombre_1'] ?? '' }}
+                            </div>
+                            <strong>{{ $configs['firma_oc_puesto_1'] ?? 'Jefe de Compras' }}</strong>
+                        </div>
 
-            <div style="margin-top:15px;">
-                Hecho Por: {{ auth()->user()->name ?? 'SISTEMA' }}
+                        <div style="display: table-cell; width:33%; text-align:center;">
+                            <span class="linea-firma"></span>
+                            <div style="font-size:11px;">
+                                {{ $configs['firma_oc_nombre_2'] ?? '' }}
+                            </div>
+                            <strong>{{ $configs['firma_oc_puesto_2'] ?? 'Gerente Administrativo' }}</strong>
+                        </div>
+
+                        <div style="display: table-cell; width:33%; text-align:center;">
+                            <span class="linea-firma"></span>
+                            <div style="font-size:11px;">
+                                {{ $configs['firma_oc_nombre_3'] ?? '' }}
+                            </div>
+                            <strong>{{ $configs['firma_oc_puesto_3'] ?? 'Alcalde Municipal' }}</strong>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SUMINISTRANTE ABAJO -->
+                <div style="margin-top:15px; font-size:10px;">
+
+                    <strong>SUMINISTRANTE:</strong>
+
+                    <p class="texto-legal">
+                        Para cancelar su cuenta envíe esta orden con Factura en triplicado firmado con la siguiente
+                        certificación.
+                        Certifico(amos) que esta cuenta es justa y correcta y que no ha sido pagada.
+                        La falta de cualquiera de estos requisitos atrasará la cancelación de la cuenta.
+                    </p>
+
+                    <div style="margin-top:15px;">
+                        Hecho Por: {{ auth()->user()->name ?? 'SISTEMA' }}
+                    </div>
+
+                </div>
+
             </div>
-
-        </div>
-
-    </div>
-</footer>
+        </footer>
 
 
         </div>
     </main>
- <!-- Numeración de páginas DomPDF -->
-<script type="text/php">
+    <!-- Numeración de páginas DomPDF -->
+    <script type="text/php">
     if (isset($pdf)) {
         $font = $fontMetrics->get_font("Arial, Helvetica, sans-serif", "normal");
         $size = 10;
@@ -592,7 +595,7 @@ th, td {
         $x = 506; /* Ajusta según ancho de página */
         $pdf->page_text($x, $y, "Página {PAGE_NUM} de {PAGE_COUNT}", $font, $size);
     }
-</script> 
+</script>
 
 </body>
 
