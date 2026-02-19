@@ -75,8 +75,9 @@
                                     <td class="text-end">
                                         <div class="btn-group btn-group-sm">
                                             <!-- VER DETALLES -->
-                                            <a href="{{ route('orden.espera', $orden->id) }}"
-                                                class="btn btn-outline-secondary" title="Ver Detalles">
+                                            <a href="{{ route('orden.pdf', $orden->id) }}"
+                                            
+                                            class="btn btn-outline-secondary" title="Ver Detalles" target="_blank">
                                                 <i class="bi bi-eye"></i>
                                             </a>
 

@@ -6,7 +6,7 @@
     <title>Informe Detallado</title>
     <style>
         @page {
-            margin: 120px 25px 70px 25px;
+            margin: 150px 25px 80px 25px;
         }
 
         body {
@@ -18,11 +18,11 @@
         /* Header Fixed */
         header {
             position: fixed;
-            top: -130px;
+            top: -170px;
             left: 0;
             right: 0;
             height: 130px;
-        }
+        
 
         /* Footer Fixed */
         footer {
@@ -41,6 +41,7 @@
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
+            page-break-inside: auto;
         }
 
         th,

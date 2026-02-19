@@ -282,8 +282,8 @@
                                 style="width:120px;">Lugar:</label>
                             <input id="lugar" name="lugar" type="text"
                                 class="form-control form-control-sm shadow-sm @error('lugar') is-invalid @enderror"
-                                placeholder="Sede / ubicación" style="max-width:400px;" value="{{ old('lugar', '') }}"
-                                required>
+                                placeholder="Sede / ubicación" style="max-width:400px;" value="{{ old(key: 'lugar', default: 'DANLÍ, EL PARAÍSO') }}"
+                                disabled>
                             @error('lugar')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -421,10 +421,12 @@
                     --}}
 
 
+                    {{--  
                     <a href="#" id="btnReponer" class="btn-as-panel">
                         <span class="icon" style="background: linear-gradient(90deg,#10b981,#34d399)">♻️</span>
                         Reponer
                     </a>
+                    --}}
 
                     <script>
                         document.getElementById('btnReponer').addEventListener('click', function(e) {
@@ -804,10 +806,10 @@
                 fetch(`{{ url('/api/check-orden') }}/${num}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.exists) {
-                            window.open("{{ url('/orden/espera') }}/" + num, '_blank');
+                        if (data.exists && data.id) {
+                            window.open("{{ url('/orden/espera') }}/" + data.id, '_blank');
                         } else {
-                            alert('⚠️ La orden #' + num + ' no ha sido creada o no existe.');
+                            alert('⚠️ La orden #' + num + ' no ha sido creada.');
                         }
                     })
                     .catch(error => {

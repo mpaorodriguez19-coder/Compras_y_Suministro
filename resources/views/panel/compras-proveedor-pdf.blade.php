@@ -6,7 +6,7 @@
     <title>Compras por Proveedor</title>
     <style>
         @page {
-            margin: 120px 40px 60px 40px;
+            margin: 150px 25px 80px 25px;
         }
 
         body {
@@ -38,7 +38,15 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            table-layout: fixed;
         }
+        tbody tr {
+    height: auto;
+}
+
+td {
+    vertical-align: top;
+}
 
         th,
         td {

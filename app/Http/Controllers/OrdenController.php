@@ -67,7 +67,7 @@ class OrdenController extends Controller
         $request->validate([
             'fecha' => 'required|date',
             'proveedor' => 'required|string',
-            'lugar' => 'required|string',
+            //'lugar' => 'required|string',
             'solicitado' => 'required|string',
             'descripcion' => 'required|array|min:1',
             'cantidad' => 'required|array|min:1',
@@ -141,29 +141,21 @@ class OrdenController extends Controller
                 $proveedorObj->update($datosActualizar);
             }
 
-            // 2. GESTIONAR SOLICITANTE (BUSCAR O CREAR)
-            $solicitanteObj = null;
+           // 2. GESTIONAR SOLICITANTE (SIEMPRE DESDE LO QUE SE ESCRIBE)
+$solicitanteNombre = trim($request->solicitado);
+$emailGenerado = strtolower(str_replace(' ', '.', $solicitanteNombre)) . '@sistema.local';
 
-            if (Auth::guard('web')->check()) {
-                // Si es un usuario normal logueado, ÉL es el solicitante
-                $solicitanteObj = Auth::guard('web')->user();
-            } else {
-                // Si es Admin, busca por nombre (o crea nuevo)
-                $solicitanteNombre = trim($request->solicitado);
-                $emailGenerado = strtolower(str_replace(' ', '.', $solicitanteNombre)) . '@sistema.local';
+$solicitanteObj = User::where('name', $solicitanteNombre)
+                    ->orWhere('email', $emailGenerado)
+                    ->first();
 
-                $solicitanteObj = User::where('name', $solicitanteNombre)
-                                    ->orWhere('email', $emailGenerado)
-                                    ->first();
-
-                if (!$solicitanteObj) {
-                    $solicitanteObj = User::create([
-                        'name' => $solicitanteNombre,
-                        'email' => $emailGenerado,
-                        'password' => bcrypt('12345678')
-                    ]);
-                }
-            }
+if (!$solicitanteObj) {
+    $solicitanteObj = User::create([
+        'name' => $solicitanteNombre,
+        'email' => $emailGenerado,
+        'password' => bcrypt('12345678')
+    ]);
+}
 
             // OBTENER Y RESERVAR NUMERO DE SECUENCIA
             $numeroAsignado = 1;
@@ -187,7 +179,7 @@ class OrdenController extends Controller
                 'numero'         => $realNumero,
                 'fecha'          => Carbon::parse($request->fecha)->format('Y-m-d'),
                 'proveedor_id'   => $proveedorObj->id,
-                'lugar'          => $request->lugar,
+              //'lugar'          => $request->lugar,
                 'solicitante_id' => $solicitanteObj->id,
                 'concepto'       => $request->concepto,
                 'subtotal'       => 0,
@@ -380,7 +372,7 @@ class OrdenController extends Controller
         $request->validate([
             'fecha' => 'required|date',
             'proveedor' => 'required|string',
-            'lugar' => 'required|string',
+           //'lugar' => 'required|string',
             'solicitado' => 'required|string',
             'descripcion' => 'required|array|min:1',
             'cantidad' => 'required|array|min:1',
@@ -421,7 +413,7 @@ class OrdenController extends Controller
              $orden->update([
                 'fecha'          => Carbon::parse($request->fecha)->format('Y-m-d'), // Asegurar formato Y-m-d
                 'proveedor_id'   => $proveedorObj->id,
-                'lugar'          => $request->lugar,
+              //'lugar'          => $request->lugar,
                 'solicitante_id' => $solicitanteObj->id,
                 'concepto'       => $request->concepto,
             ]);
@@ -512,7 +504,10 @@ class OrdenController extends Controller
     // VERIFICAR SI ORDEN EXISTE (API)
     public function checkOrden($numero)
     {
-        $exists = Orden::where('numero', $numero)->exists();
-        return response()->json(['exists' => $exists]);
+        $orden = Orden::where('numero', $numero)->first();
+        return response()->json([
+            'exists' => $orden ? true : false,
+            'id' => $orden ? $orden->id : null
+        ]);
     }
 }

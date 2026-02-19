@@ -268,9 +268,18 @@
             font-weight: bold;
         }
 
-        .firma-col {
-            width: 45%;
-        }
+        .firmas-linea {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 60px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.firma-col {
+    width: 32%;
+}
+
 
         .copia-hecho {
             margin-top: 20px;
@@ -459,23 +468,25 @@
             </div>
 
             <!-- Lado Derecho (Firmas) -->
-            <div class="footer-right">
+            <div class="firmas-linea">
 
-                <div class="firma-box">
-                    <span class="linea"></span><br>
-                    <strong>Jefe de Compras</strong>
-                </div>
+    <div class="firma-col">
+        <span class="linea"></span><br>
+        <strong>Jefe de Compras</strong>
+    </div>
 
-                <div class="firmas-bottom">
-                    <div class="firma-col">
-                        <span class="linea"></span><br>
-                        Gerente Administrativo
-                    </div>
-                    <div class="firma-col">
-                        <span class="linea"></span><br>
-                        Alcalde Municipal
-                    </div>
-                </div>
+    <div class="firma-col">
+        <span class="linea"></span><br>
+        <strong>Gerente Administrativo</strong>
+    </div>
+
+    <div class="firma-col">
+        <span class="linea"></span><br>
+        <strong>Alcalde Municipal</strong>
+    </div>
+
+</div>
+
 
             </div>
         </div>
